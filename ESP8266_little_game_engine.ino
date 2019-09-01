@@ -5,16 +5,13 @@
 #include <coos.h>
 #include <FS.h>
 #include <TFT_eSPI.h>
+#include <EEPROM.h>
 
 #include "settings.h"
 #ifdef ESPBOY
   #include "ESPboyLogo.h"
   #include <Adafruit_MCP23017.h>
   #include <FastLED.h>
-#endif
-
-#ifdef ESPBOY
-  #define SOUNDpin          D3
 #endif
 
 ADC_MODE(ADC_VCC);
@@ -106,6 +103,17 @@ void loadFromSerial(){
   cpuInit();
 }
 
+void viewEEPROM(){
+  for(int16_t i = 0; i < EEPROM_SIZE; i++){
+    if(i % 32 == 0)
+      Serial.println();
+    if(EEPROM.read(i) < 0x10)
+      Serial.print('0');
+    Serial.print(EEPROM.read(i), HEX);
+    Serial.print(' ');
+  }
+}
+
 void changeSettings(){
   fileIsLoad = false;
   if(Serial.available()){
@@ -124,6 +132,9 @@ void changeSettings(){
     else if(c == 'd'){
       debug();
       return;
+    }
+    else if(c == 'e'){
+      viewEEPROM();
     }
     else if(c == 'v'){
       Serial.println();
@@ -253,6 +264,7 @@ void setup() {
   system_update_cpu_freq(FREQUENCY);
   // ------------------end ESP8266'centric------------------------------------
   Serial.begin (115200);
+  EEPROM.begin(EEPROM_SIZE);
  #ifdef ESPBOY
   Serial.println();
   Serial.println(F("ESPboy"));
@@ -280,12 +292,12 @@ void setup() {
   tft.setCursor(10,102);
   tft.print(F("Little game engine"));
   //sound init and test
-  pinMode(SOUNDpin, OUTPUT);
-  tone(SOUNDpin, 200, 100);
+  pinMode(SOUNDPIN, OUTPUT);
+  tone(SOUNDPIN, 200, 100);
   delay(100);
-  tone(SOUNDpin, 100, 100);
+  tone(SOUNDPIN, 100, 100);
   delay(100);
-  noTone(SOUNDpin);
+  noTone(SOUNDPIN);
   delay (2000);
  #else
   Wire.begin(D2, D1);
