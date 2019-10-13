@@ -1,6 +1,6 @@
 #define ESPBOY 1
 #define RAM_SIZE 20 * 1024
-#define FREQUENCY    160    // valid 80, 160
+#define FREQUENCY    160   // valid 80, 160
 
 #ifdef ESPBOY
   #define MCP23017address 0
