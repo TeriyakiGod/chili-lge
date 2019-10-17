@@ -1,22 +1,26 @@
 # ESPboy_little_game_engine
 
 LGE is a fantasy console for making, sharing and playing tiny games and other computer programs. 
-You can make you game or program using online compiler and run compiled binary on portable ESPboy console thouse feels like a regular console. Check few, colored, nostalgic LGE games from the package, by uploading them to SPIFFS.
+You can make you game or program using online compiler and run compiled binary online or on portable ESPboy console thouse feels like a regular console. Check few, colored, nostalgic LGE games from the package, by uploading them to SPIFFS.
 
-Games sources:
+LGE Games
 https://github.com/corax89/game_engine_for_esp8266_with_compiler/tree/master/example
 
-Hackaday:
+LGE at Hackaday
 https://hackaday.io/project/164205-esp-little-game-engine
 
-Article:
+LGE Article
 https://hackaday.com/2019/03/11/esp8266-gets-its-game-on-with-open-source-engine/
 
-User Guide:
+LGE User Guide
 https://corax89.github.io/esp8266Game/user_guide/index.html
 
-Online ESP-LGE SDK, compiler, emulator:
+LGE virtual machine decription
+https://github.com/corax89/esp8266_game_engine/blob/master/esp_little_game_engine_description.pdf
+
+Online LGE SDK: compiler, emulator:
 https://corax89.github.io/esp8266Game/index.html
+
 
 How to compile for ESPboy:
 1. Install Arduino IDE
