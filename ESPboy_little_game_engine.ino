@@ -6,6 +6,7 @@
 #include <TFT_eSPI.h>
 #include <EEPROM.h>
 #include "acoos.h"
+#include <Adafruit_MCP4725.h>
 
 #include "settings.h"
 #ifdef ESPBOY
@@ -25,6 +26,7 @@ TFT_eSPI tft = TFT_eSPI();
 Adafruit_MCP23017 mcp;
 //Adafruit_NeoPixel pixels(LEDquantity, LEDPIN, NEO_GRB + NEO_KHZ800);
 CRGB leds[1];
+Adafruit_MCP4725 dac;
 #endif
 
 // ------------------begin ESP8266'centric----------------------------------
@@ -389,6 +391,10 @@ void setup() {
  #ifdef ESPBOY
   Serial.println();
   Serial.println(F("ESPboy"));
+  //DAC init
+  dac.begin(0x60);
+  delay(100);
+  dac.setVoltage(0, true);
   //buttons on mcp23017 init
   mcp.begin(MCP23017address);
   delay (100);
@@ -419,7 +425,14 @@ void setup() {
   tone(SOUNDPIN, 100, 100);
   delay(100);
   noTone(SOUNDPIN);
-  delay (2000);
+  //LCD backlit on
+  for (int count=0; count<1000; count+=50)
+  {
+    dac.setVoltage(count, false);
+    delay(50);
+  }
+  dac.setVoltage(4095, true);
+  delay(1000);
  #else
   Wire.begin(D2, D1);
   geti2cAdress();
