@@ -6,16 +6,14 @@
 #include <TFT_eSPI.h>
 #include <EEPROM.h>
 #include "acoos.h"
-#include <Adafruit_MCP4725.h>
 
 #include "settings.h"
 #ifdef ESPBOY
   #include "ESPboyLogo.h"
   #include <Adafruit_MCP23017.h>
+  #include <Adafruit_MCP4725.h>
   #include <FastLED.h>
 #endif
-
-ADC_MODE(ADC_VCC);
 
 Coos <5, 0> coos;
 
@@ -24,9 +22,8 @@ TFT_eSPI tft = TFT_eSPI();
 
 #ifdef ESPBOY
 Adafruit_MCP23017 mcp;
-//Adafruit_NeoPixel pixels(LEDquantity, LEDPIN, NEO_GRB + NEO_KHZ800);
-CRGB leds[1];
 Adafruit_MCP4725 dac;
+CRGB leds[1];
 #endif
 
 // ------------------begin ESP8266'centric----------------------------------
@@ -381,7 +378,6 @@ void coos_info(void){
 }
 
 void setup() {
-  byte menuSelected = 3;
   // ------------------begin ESP8266'centric----------------------------------
   delay(1);                                // give RF section time to shutdown
   system_update_cpu_freq(FREQUENCY);
@@ -389,16 +385,18 @@ void setup() {
   Serial.begin (115200);
   EEPROM.begin(EEPROM_SIZE);
  #ifdef ESPBOY
+  Wire.begin();
   Serial.println();
   Serial.println(F("ESPboy"));
+  scani2c();
   //DAC init
-  dac.begin(0x60);
+  dac.begin(MCP4725address);
   delay(100);
   dac.setVoltage(0, true);
   //buttons on mcp23017 init
   mcp.begin(MCP23017address);
   delay (100);
-  for (int i=0;i<8;i++){  
+  for(int i = 0; i < 8; i++){
      mcp.pinMode(i, INPUT);
      mcp.pullUp(i, HIGH);
   }
@@ -407,13 +405,13 @@ void setup() {
   FastLED.show();
   FastLED.show();
   delay(50);
-  //TFT init 
+  //initialize LCD
   mcp.pinMode(csTFTMCP23017pin, OUTPUT);
   mcp.digitalWrite(csTFTMCP23017pin, LOW);
-  tft.init();            // initialize LCD
+  tft.init();            
   tft.setRotation(0);
   tft.fillScreen(0x0000);
-  tft.setTextSize(1); 
+  tft.setTextSize(1);
   tft.drawXBitmap(30, 24, ESPboyLogo, 68, 64, 0xFFE0);
   tft.setTextColor(0xFFE0);
   tft.setCursor(10,102);
@@ -426,8 +424,7 @@ void setup() {
   delay(100);
   noTone(SOUNDPIN);
   //LCD backlit on
-  for (int count=0; count<1000; count+=50)
-  {
+  for (int count = 0; count < 1000; count += 50){
     dac.setVoltage(count, false);
     delay(50);
   }
@@ -471,7 +468,8 @@ void setup() {
     }
   }
   else{
-    WiFi.forceSleepBegin();                  // turn off ESP8266 RF
+    // turn off ESP8266 RF
+    WiFi.forceSleepBegin();
     delay(1);
   }
   memoryAlloc();
