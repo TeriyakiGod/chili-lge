@@ -1,12 +1,14 @@
 #include <EEPROM.h>
+#include "settings.h"
 
 #define FIFO_MAX_SIZE 32
 
-int16_t reg[16];
-int16_t shadow_reg[16];
+int16_t reg[16] __attribute__ ((aligned));
+int16_t shadow_reg[16] __attribute__ ((aligned));
 uint16_t pc = 0;
 uint16_t interrupt = 0;
 uint16_t dataName = 0;
+uint32_t accum, saccum;
 byte carry = 0;
 byte zero = 0;
 byte negative = 0;
@@ -72,6 +74,7 @@ inline void byteToFlags(int16_t b){
 
 inline void setinterrupt(uint16_t adr, int16_t param){
   if(interrupt == 0 && adr != 0){
+    saccum = accum;
     shadow_reg[0] = flagsToByte();
     for(int8_t j = 1; j <= 15; j++){
       shadow_reg[j] = reg[j];
@@ -170,18 +173,10 @@ inline void setRedraw(){
   redraw = 1;
 }
 
-inline int16_t setFlags(int32_t n){
+inline void setFlags(int32_t n){
   carry = (n > 0xffff) ? 1 : 0;
   zero = (n == 0) ? 1 : 0;
   negative = (n < 0) ? 1 : 0;
-  return (int16_t)n;
-}
-
-inline int16_t setFlagsC(int16_t n){
-  carry = (n > 0xff) ? 1 : 0;
-  zero = (n == 0) ? 1 : 0;
-  negative = (n < 0) ? 1 : 0;
-  return (uint16_t)n;
 }
 
 int16_t isqrt(int16_t n) {
@@ -320,37 +315,36 @@ void cpuStep(){
   byte reg3 = 0;
   uint16_t adr;
   uint16_t j;
-  uint32_t n = 0;
   switch(op1 >> 4){
     case 0x0:
       switch(op1){ 
         case 0x01: 
           //LDI R,int   01 0R XXXX
           reg1 = (op2 & 0xf);
-          reg[reg1] = readInt(pc);
-          setFlags(reg[reg1]);
+          accum = readInt(pc);
+          reg[reg1] = (int16_t)accum;
           pc += 2;
           break;
         case 0x02: 
           //LDI R,(R)   02 RR
           reg1 = ((op2 & 0xf0) >> 4);
           reg2 = (op2 & 0xf);
-          reg[reg1] = readInt(reg[reg2]);
-          setFlags(reg[reg1]);
+          accum = readInt(reg[reg2]);
+          reg[reg1] = (int16_t)accum;
           break;
         case 0x03: 
           //LDI R,(adr) 03 0R XXXX
           reg1 = (op2 & 0xf);
-          reg[reg1] = readInt(readInt(pc));
-          setFlags(reg[reg1]);
+          accum = readInt(readInt(pc));
+          reg[reg1] = (int16_t)accum;
           pc += 2;
           break;
         case 0x04: 
           //LDI R,(int+R) 04 RR XXXX
           reg1 = ((op2 & 0xf0) >> 4);
           reg2 = (op2 & 0xf);
-          reg[reg1] = readInt(reg[reg2] + readInt(pc));
-          setFlags(reg[reg1]);
+          accum = readInt(reg[reg2] + readInt(pc));
+          reg[reg1] = (int16_t)accum;
           pc += 2;
           break;
         case 0x05: 
@@ -384,8 +378,8 @@ void cpuStep(){
           //LDIAL R,(int+R*2) 08 RR XXXX
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          reg[reg1] = readInt(reg[reg2] * 2 + readInt(pc));
-          setFlags(reg[reg1]);
+          accum = readInt(reg[reg2] * 2 + readInt(pc));
+          reg[reg1] = (int16_t)accum;
           pc += 2;
           break;
         case 0x09:
@@ -402,24 +396,24 @@ void cpuStep(){
     case 0x1:
       // LDC R,char 1R XX
       reg1 = (op1 & 0xf);
-      reg[reg1] = op2;
-      setFlagsC(reg[reg1]);
+      accum = op2;
+      reg[reg1] = (int16_t)accum;
       break;
     case 0x2:
       if(op1 == 0x20){
         // LDC R,(R)  20 RR
         reg1 = ((op2 & 0xf0) >> 4);
         reg2 = (op2 & 0xf);
-        reg[reg1] = readMem(reg[reg2]);
-        setFlagsC(reg[reg1]);
+        accum = readMem(reg[reg2]);
+        reg[reg1] = (int16_t)accum;
       }
       else{
         // LDC R,(R+R)  2R RR
         reg1 = (op1 & 0xf);
         reg2 = ((op2 & 0xf0) >> 4);
         reg3 = (op2 & 0xf);
-        reg[reg1] = readMem(reg[reg2] + reg[reg3]);
-        setFlagsC(reg[reg1]);
+        accum = readMem(reg[reg2] + reg[reg3]);
+        reg[reg1] = (int16_t)accum;
       }
       break;
     case 0x3: 
@@ -428,15 +422,15 @@ void cpuStep(){
           // LDC R,(int+R)30 RR XXXX
           reg1 = ((op2 & 0xf0) >> 4);
           reg2 = (op2 & 0xf);
-          reg[reg1] = readMem(reg[reg2] + readInt(pc));
-          setFlagsC(reg[reg1]);
+          accum = readMem(reg[reg2] + readInt(pc));
+          reg[reg1] = (int16_t)accum;
           pc += 2;
           break;
         case 0x31:
           // LDC R,(adr)  31 0R XXXX
           reg1 = (op2 & 0xf);
-          reg[reg1] = readMem(readInt(pc));
-          setFlagsC(reg[reg1]);
+          accum = readMem(readInt(pc));
+          reg[reg1] = (int16_t)accum;
           pc += 2;
           break;
         case 0x32:
@@ -485,8 +479,8 @@ void cpuStep(){
         case 0x52:
           // GTIMER R   520R
           reg1 = op2 & 0xf;
-          reg[reg1] = timers[reg[reg1] & 0x7];
-          setFlags(reg[reg1]);
+          accum = timers[reg[reg1] & 0x7];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0x53:
           // SETLED R   530R
@@ -549,8 +543,8 @@ void cpuStep(){
       reg1 = (op1 & 0xf);
       reg2 = ((op2 & 0xf0) >> 4);
       reg3 = (op2 & 0xf);
-      reg[reg1] = readInt(reg[reg2] + reg[reg3]);
-      setFlags(reg[reg1]);
+      accum = readInt(reg[reg2] + reg[reg3]);
+      reg[reg1] = (int16_t)accum;
       break;
     case 0x7:
       // STI (R+R),R  7R RR
@@ -599,6 +593,7 @@ void cpuStep(){
           break;
         case 0x91:
           // JNZ adr    91 00 XXXX
+          setFlags(accum);
           if(zero == 0)
             pc = readInt(pc);
           else 
@@ -606,6 +601,7 @@ void cpuStep(){
           break;
         case 0x92:
           // JZ adr   92 00 XXXX
+          setFlags(accum);
           if(zero != 0)
             pc = readInt(pc);
           else 
@@ -613,6 +609,7 @@ void cpuStep(){
           break;
         case 0x93:
           // JNP adr    93 00 XXXX
+          setFlags(accum);
           if(negative == 1)
             pc = readInt(pc);
           else 
@@ -620,6 +617,7 @@ void cpuStep(){
           break;
         case 0x94:
           // JP adr   94 00 XXXX
+          setFlags(accum);
           if(negative != 1)
             pc = readInt(pc);
           else 
@@ -627,6 +625,7 @@ void cpuStep(){
           break;
         case 0x95:
           // JNC adr    95 00 XXXX
+          setFlags(accum);
           if(carry != 1)
             pc = readInt(pc);
           else 
@@ -634,6 +633,7 @@ void cpuStep(){
           break;
         case 0x96:
           // JC adr   96 00 XXXX
+          setFlags(accum);
           if(carry == 1)
             pc = readInt(pc);
           else 
@@ -641,6 +641,7 @@ void cpuStep(){
           break;
         case 0x97:
           // JZR R,adr  97 0R XXXX
+          setFlags(accum);
           reg1 = op2 & 0xf;
           if(reg[reg1] == 0)
             pc = readInt(pc);
@@ -649,6 +650,7 @@ void cpuStep(){
           break;
         case 0x98:
           // JNZR R,adr 98 0R XXXX
+          setFlags(accum);
           reg1 = op2 & 0xf;
           if(reg[reg1] != 0)
             pc = readInt(pc);
@@ -658,8 +660,6 @@ void cpuStep(){
         case 0x99:
           // CALL adr   99 00 XXXX
           reg[0] -= 2;
-          if(reg[0] < 0)
-            reg[0] += 0xffff;
           writeInt(reg[0], pc + 2);
           pc = readInt(pc);
           break;
@@ -673,6 +673,7 @@ void cpuStep(){
             pc = readInt(reg[0]);
             if(pc == interrupt){
               reg[0] += 4;
+              accum = saccum;
               for(int8_t j = 15; j >= 1; j--){
                 reg[j] = shadow_reg[j];
               }
@@ -693,202 +694,182 @@ void cpuStep(){
           // ADD R,R    A0 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] + reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] + reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA1:
           // ADC R,R    A1 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] + reg[reg2] + carry;
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] + reg[reg2] + carry;
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA2:
           // SUB R,R    A2 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] - reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] - reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA3:
           // SBC R,R    A3 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] - reg[reg2] - carry;
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] - reg[reg2] - carry;
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA4:
           // MUL R,R    A4 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] * reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] * reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA5:
           // DIV R,R    A5 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          if(reg[reg2] != 0)
-            n = reg[reg1] / reg[reg2];
-          else
-            n = 0;//error
-          n = setFlags(n);
-          reg[reg2] = reg[reg1] % reg[reg2];
-          reg[reg1] = n;
+          if(reg[reg2] != 0){
+            accum = reg[reg1] / reg[reg2];
+            reg[reg2] = reg[reg1] % reg[reg2];
+          }
+          else{
+            accum = 0;//error
+            reg[reg2] = 0;
+          }
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA6:
           // AND R,R    A6 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] & reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] & reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA7:
           // OR R,R   A7 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] | reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] | reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xA8:
           if(op2 == 0x10){
             // INC adr    A8 10 XXXX
             reg1 = op2 & 0xf;
-            n = readInt(readInt(pc)) + 1;
-            n = setFlags(n);
-            writeInt(readInt(pc), n);
+            accum = readInt(readInt(pc)) + 1;
+            writeInt(readInt(pc), (int16_t)accum);
             pc += 2;
           }
           else if(op2 > 0x10){
             // INC R,n    A8 nR
             reg1 = op2 & 0xf;
-            n = reg[reg1] + (op2 >> 4);
-            n = setFlags(n);
-            reg[reg1] = n;
+            accum = reg[reg1] + (op2 >> 4);
+            reg[reg1] = (int16_t)accum;
           }
           else{
             // INC R    A8 0R       
             reg1 = op2 & 0xf;
-            n = reg[reg1] + 1;
-            n = setFlags(n);
-            reg[reg1] = n;
+            accum = reg[reg1] + 1;
+            reg[reg1] = (int16_t)accum;
           }
           break;
         case 0xA9:
           if(op2 == 0x10){
             // DEC adr    A9 10 XXXX
             reg1 = op2 & 0xf;
-            n = readInt(readInt(pc)) - 1;
-            n = setFlags(n);
-            writeInt(readInt(pc), n);
+            accum = readInt(readInt(pc)) - 1;
+            writeInt(readInt(pc), (int16_t)accum);
             pc += 2;
           }
           else if(op2 > 0x10){
             // DEC R,n    A9 nR
             reg1 = op2 & 0xf;
-            n = reg[reg1] - (op2 >> 4);
-            n = setFlags(n);
-            reg[reg1] = n;
+            accum = reg[reg1] - (op2 >> 4);
+            reg[reg1] = (int16_t)accum;
           }
           else{
             // DEC R    A9 0R
             reg1 = op2 & 0xf;
-            n = reg[reg1] - 1;
-            n = setFlags(n);
-            reg[reg1] = n;
+            accum = reg[reg1] - 1;
+            reg[reg1] = (int16_t)accum;
           }
           break;
         case 0xAA:
           // XOR R,R    AA RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] ^ reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] ^ reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xAB:
           // SHL R,R    AB RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] << reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] << reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xAC:
           // SHR R,R    AC RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] >> reg[reg2];
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = reg[reg1] >> reg[reg2];
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xAD:
           reg1 = op2 & 0xf;
           reg2 = op2 & 0xf0;
           // RAND R   AD 0R
           if(reg2 == 0x00){
-            n = random(0, reg[reg1] + 1);
-            n = setFlags(n);
-            reg[reg1] = n;
+            accum = random(0, reg[reg1] + 1);
+            reg[reg1] = (int16_t)accum;
           }
           // SQRT R    AD 1R
           else if(reg2 == 0x10){
-            n = isqrt(reg[reg1]);
-            n = setFlags(n);
-            reg[reg1] = n;
+            accum = isqrt(reg[reg1]);
+            reg[reg1] = (int16_t)accum;
           }
           break;
         case 0xAE:
           // ANDL R,R   AE RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = (reg[reg1] != 0 && reg[reg2] != 0) ? 1 : 0;
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = (reg[reg1] != 0 && reg[reg2] != 0) ? 1 : 0;
+          reg[reg1] = (int16_t)accum;
           break;
         case 0xAF:
           // ORL R,R    AF RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = (reg[reg1] != 0 || reg[reg2] != 0) ? 1 : 0;
-          n = setFlags(n);
-          reg[reg1] = n;
+          accum = (reg[reg1] != 0 || reg[reg2] != 0) ? 1 : 0;
+          reg[reg1] = (int16_t)accum;
           break;
       }
       break;
     case 0xB:
       //CMP R,CHR   BR XX
       reg1 = (op1 & 0x0f);
-      n = reg[reg1] - op2;
-      n = setFlags(n);
+      accum = reg[reg1] - op2;
       break;
     case 0xC:
       switch(op1){
         case 0xC0:
           //CMP R,INT   C0 R0 XXXX
           reg1 = (op2 & 0xf0) >> 4;
-          n = reg[reg1] - readInt(pc);
-          n = setFlags(n);
+          accum = reg[reg1] - readInt(pc);
           pc += 2;
           break;
         case 0xC1:
           //CMP R,R   C1 RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          n = reg[reg1] - reg[reg2];
-          n = setFlags(n);
+          accum = reg[reg1] - reg[reg2];
           break;
         case 0xC2:
           //LDF R,F   C2 RF
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
+          setFlags(accum);
           if(reg2 == 0)
             reg[reg1] = carry;
           else if(reg2 == 1)
@@ -915,6 +896,32 @@ void cpuStep(){
             }
           else
             reg[reg1] = 0;
+          break;
+        case 0xc3:
+          reg1 = op2 & 0xf;
+          reg2 = op2 & 0xf0;
+          // ITOF R   C3 0R
+          if (reg2 == 0x00) {
+            reg[reg1] = reg[reg1] * (1 << MULTIPLY_FP_RESOLUTION_BITS);
+          }
+          // FTOI R   C3 1R
+          else if (reg2 == 0x10) {
+            reg[reg1] = reg[reg1] / (1 << MULTIPLY_FP_RESOLUTION_BITS);
+          }
+          break;
+        case 0xC4:
+          // MULF R,R   C4 RR
+          reg1 = (op2 & 0xf0) >> 4;
+          reg2 = op2 & 0xf;
+          accum = (reg[reg1] * reg[reg2]) / (1 << MULTIPLY_FP_RESOLUTION_BITS);
+          reg[reg1] = (uint16_t) accum;
+          break;
+        case 0xC5:
+          // DIVF R,R   C5 RR
+          reg1 = (op2 & 0xf0) >> 4;
+          reg2 = op2 & 0xf;
+          accum = (reg[reg1] * (1 << MULTIPLY_FP_RESOLUTION_BITS)) / reg[reg2];
+          reg[reg1] = (uint16_t) accum;
           break;
       }
       break;
@@ -970,6 +977,47 @@ void cpuStep(){
               reg1 = (op2 & 0xf);
               setCharY(reg[reg1] & 0xff);
               break;
+            case 0x50:
+              //DRECT R     D15R
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1];
+              drwRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+            break;
+            case 0x60:
+              //FRECT R     D16R
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1];
+              fllRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+            break;
+            case 0x70:
+              //DCIRC R     D17R
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1];
+              drwCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+            break;
+            case 0x80:
+              //FCIRC R     D18R
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1];
+              fllCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+            break;
+            case 0x90:
+              //DTRIANG R   D19R
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1];
+              drwTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+            break;
+            case 0xA0:
+              //FTRIANG R   D1AR
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1];
+              fllTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+            break;
+            case 0xB0:
+              //PUTF R      D1BR
+              reg1 = (op2 & 0xf);
+              printfix(reg[reg1], color, bgcolor);
+            break;
           }
           break;
         case 0xD2: 

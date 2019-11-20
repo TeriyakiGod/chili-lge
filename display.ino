@@ -125,16 +125,16 @@ static const uint8_t pauseImage[] PROGMEM = {
   0x42,0x40,0x88,0xd9,0x82,0x40,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xee,0xa1,0x59,0xb7,0x8a,0xc1,0x92,0x22,0xca,
   0x81,0x19,0x32,0x8a,0x81,0x10,0xa2,0x8e,0x81,0x1b,0x32,0x0,0x0,0x0,0x0
 };
-uint8_t *screen;
-uint8_t *sprite_screen;
+uint8_t *screen __attribute__ ((aligned));
+uint8_t *sprite_screen __attribute__ ((aligned));
 uint8_t line_is_draw[128] __attribute__ ((aligned));
-char charArray[340];
+char charArray[340] __attribute__ ((aligned));
 uint16_t pix_buffer[SCREEN_REAL_WIDTH] __attribute__ ((aligned));
 uint16_t rscreenWidth;
 uint16_t rscreenHeight;
 uint16_t displayXOffset = 32;
-struct sprite sprite_table[32];
-struct Particle particles[PARTICLE_COUNT];
+struct sprite sprite_table[32] __attribute__ ((aligned));
+struct Particle particles[PARTICLE_COUNT] __attribute__ ((aligned));
 struct Emitter emitter;
 struct Tile tile;
 int8_t imageSize = 1;
@@ -168,8 +168,6 @@ int16_t getSin(int16_t g){
     g += 360;
   return (int16_t)(int8_t)pgm_read_byte_near(sinT + g);
 }
-
-#define MULTIPLY_FP_RESOLUTION_BITS  6
 
 int16_t atan2_fp(int16_t y_fp, int16_t x_fp){
   int32_t coeff_1 = 45;
@@ -1402,7 +1400,7 @@ int8_t getCharY(){
   return regy;
 }
 
-void printc(char c, byte fc, byte bc){
+void printc(char c, uint8_t fc, uint8_t bc){
   if(c == '\n'){
     fillRect(regx * 6, regy * 8, 127 - regx * 6, 8, bgcolor);
     for(byte i = regx; i <= 21; i++){
@@ -1446,6 +1444,45 @@ void printc(char c, byte fc, byte bc){
   }
 }
 
+
+void printfix(uint16_t value, uint8_t fc, uint8_t bc){
+    char sbuffer[10];
+    const uint16_t fractPartMask = (1 << MULTIPLY_FP_RESOLUTION_BITS) - 1;
+    int16_t j; 
+    if(value == 0){
+        printc('0', color, bgcolor);
+    }
+    uint16_t intPart = value >> MULTIPLY_FP_RESOLUTION_BITS;
+    value &= fractPartMask;
+    // преобразуем целую часть
+    itoa(intPart, sbuffer, 10);
+    j = 0;
+    while(sbuffer[j]){
+      printc(sbuffer[j], color, bgcolor);
+      j++;
+    }
+    char *ptr = sbuffer;
+    // если есть дробная часть
+    if(value != 0){
+        *ptr = '.';
+        for(j = 0; j < 3; j++){
+            value &= fractPartMask;
+            value *= 10;
+            //value <<= 1;
+            //value += value << 2;
+            *++ptr = (uint8_t)(value >> MULTIPLY_FP_RESOLUTION_BITS) + '0';
+        }
+        // удаляем завершаюшие нули
+        while(ptr[0] == '0') --ptr;
+        ptr[1] = 0;
+    }
+    j = 0;
+    while(sbuffer[j]){
+      printc(sbuffer[j], color, bgcolor);
+      j++;
+    }
+}
+
 void setColor(uint8_t c){
   color = c & 0xf;
 }
@@ -1454,10 +1491,186 @@ void setBgColor(uint8_t c){
   bgcolor = c & 0xf;
 }
 
+void drwRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1){
+  drawFHLine(x0, x1, y0);
+  drawFHLine(x0, x1, y1);
+  drawFVLine(x0, y0, y1);
+  drawFVLine(x1, y1, y1);
+}
+
 void fillRect(int8_t x, int8_t y, uint8_t w, uint8_t h, uint8_t c){
    for(int16_t jx = x; jx < x + w; jx++)
      for(int16_t jy = y; jy < y + h; jy++)
       setPix(jx, jy, c);
+}
+
+void fllRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1){
+  for(int16_t jy = y0; jy <= y1; jy++)
+    drawFHLine(x0, x1, jy);
+}
+
+void drwCirc(int16_t x0, int16_t y0, int16_t r) {
+  int16_t  x  = 0;
+  int16_t  dx = 1;
+  int16_t  dy = r+r;
+  int16_t  p  = -(r>>1);
+
+  // These are ordered to minimise coordinate changes in x or y
+  // drawPixel can then send fewer bounding box commands
+  setPix(x0 + r, y0, color);
+  setPix(x0 - r, y0, color);
+  setPix(x0, y0 - r, color);
+  setPix(x0, y0 + r, color);
+
+  while(x<r){
+
+    if(p>=0) {
+      dy-=2;
+      p-=dy;
+      r--;
+    }
+
+    dx+=2;
+    p+=dx;
+
+    x++;
+
+    // These are ordered to minimise coordinate changes in x or y
+    // drawPixel can then send fewer bounding box commands
+    setPix(x0 + x, y0 + r, color);
+    setPix(x0 - x, y0 + r, color);
+    setPix(x0 - x, y0 - r, color);
+    setPix(x0 + x, y0 - r, color);
+
+    setPix(x0 + r, y0 + x, color);
+    setPix(x0 - r, y0 + x, color);
+    setPix(x0 - r, y0 - x, color);
+    setPix(x0 + r, y0 - x, color);
+  }
+}
+
+void fllCirc(int16_t x0, int16_t y0, int16_t r) {
+  int16_t  x  = 0;
+  int16_t  dx = 1;
+  int16_t  dy = r+r;
+  int16_t  p  = -(r>>1);
+
+  drawFHLine(x0 - r, x0 + r, y0);
+
+  while(x<r){
+    if(p>=0) {
+      dy-=2;
+      p-=dy;
+      r--;
+    }
+
+    dx+=2;
+    p+=dx;
+
+    x++;
+
+    drawFHLine(x0 - r, x0 + r, y0 + x);
+    drawFHLine(x0 - r, x0 + r, y0 - x);
+    drawFHLine(x0 - x, x0 + x, y0 + r);
+    drawFHLine(x0 - x, x0 + x, y0 - r);
+  }
+}
+
+void drwTriangle( uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3){
+  drwLine( x1, y1, x2, y2);
+  drwLine( x2, y2, x3, y3);
+  drwLine( x3, y3, x1, y1);
+}
+
+void fllTriangle( uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2){
+  int32_t a, b, y, last, t;
+
+  // Sort coordinates by Y order (y2 >= y1 >= y0)
+    if (y0 > y1) {
+      t = y0;
+      y0 = y1;
+      y1 = t;
+      t = x0;
+      x0 = x1;
+      x1 = t;
+    }
+    if (y1 > y2) {
+      t = y2;
+      y2 = y1;
+      y1 = t;
+      t = x2;
+      x2 = x1;
+      x1 = t;
+    }
+    if (y0 > y1) {
+      t = y0;
+      y0 = y1;
+      y1 = t;
+      t = x0;
+      x0 = x1;
+      x1 = t;
+    }
+
+    if (y0 == y2) {
+      a = b = x0;
+      if (x1 < a)
+        a = x1;
+      else if (x1 > b)
+        b = x1;
+      if (x2 < a)
+        a = x2;
+      else if (x2 > b)
+        b = x2;
+      drawFHLine(a, b, y0);
+      return;
+    }
+
+  int32_t
+  dx01 = x1 - x0,
+  dy01 = y1 - y0,
+  dx02 = x2 - x0,
+  dy02 = y2 - y0,
+  dx12 = x2 - x1,
+  dy12 = y2 - y1,
+  sa   = 0,
+  sb   = 0;
+
+  if(y1 == y2) 
+    last = y1;
+  else
+    last = y1 - 1;
+
+  for (y = y0; y <= last; y++) {
+    a   = x0 + sa / dy01;
+    b   = x0 + sb / dy02;
+    sa += dx01;
+    sb += dx02;
+
+    if (a > b){
+      t = a;
+      a = b;
+      b = t;
+    }
+    drawFHLine(a, b, y);
+  }
+
+  // For lower part of triangle, find scanline crossings for segments
+  // 0-2 and 1-2.  This loop is skipped if y1=y2.
+  sa = dx12 * (y - y1);
+  sb = dx02 * (y - y0);
+  for (; y <= y2; y++) {
+    a   = x1 + sa / dy12;
+    b   = x0 + sb / dy02;
+    sa += dx12;
+    sb += dx02;
+
+    if (a > b){
+      t = a;
+      a = b;
+      b = t;
+    }
+    drawFHLine(a, b, y);
+  }
 }
 
 void putString(char s[], int8_t y){
