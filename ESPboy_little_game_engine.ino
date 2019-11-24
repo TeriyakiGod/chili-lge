@@ -425,6 +425,7 @@ void setup() {
   dac.setVoltage(4095, true);
   //sound init and test
   pinMode(SOUNDPIN, OUTPUT);
+  delay (100);
   tone(SOUNDPIN, 200, 100);
   delay(100);
   tone(SOUNDPIN, 100, 100);
