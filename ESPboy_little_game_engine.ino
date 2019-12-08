@@ -413,13 +413,7 @@ void setup() {
   tft.setTextColor(0xFFE0);
   tft.setCursor(10,102);
   tft.print(F("Little game engine"));
-  //LCD backlit on
-  for (int count = 0; count < 1000; count += 50){
-    dac.setVoltage(count, false);
-    delay(50);
-  }
-  dac.setVoltage(4095, true);
-  //sound init and test
+   //sound init and test
   pinMode(SOUNDPIN, OUTPUT);
   delay (100);
   tone(SOUNDPIN, 200, 100);
@@ -427,7 +421,12 @@ void setup() {
   tone(SOUNDPIN, 100, 100);
   delay(100);
   noTone(SOUNDPIN);
-
+  //LCD backlit on
+  for (int count = 0; count < 1000; count += 50){
+    dac.setVoltage(count, false);
+    delay(50);
+  }
+  dac.setVoltage(4095, true);
   delay(1000);
  #else
   Wire.begin(D2, D1);

@@ -1,6 +1,6 @@
 #include "settings.h"
-#define NEXT_CHAR rtttl.startposition++; c = (char)readMem(rtttl.startposition); if(c == 0) return 0;
-#define NEXT_CHAR_IN_P rtttl.position++; c = (char)readMem(rtttl.startposition + rtttl.position); if(c == 0) return 50;
+#define NEXT_CHAR rtttl.startposition++; c = (char)readMem(rtttl.startposition); 
+#define NEXT_CHAR_IN_P rtttl.position++; c = (char)readMem(rtttl.startposition + rtttl.position); 
 #define OCTAVE_OFFSET 0
 
 int notes[] = { 0,
@@ -243,7 +243,7 @@ int playRtttl(){
   // now play the note
   rtttl.delay = duration;
   if(note){
-    rtttl.this_tone = notes[note];
+    rtttl.this_tone = notes[note+((scale-4)*12)];
     tone(SOUNDPIN, rtttl.this_tone, rtttl.delay);
   }
   else{
