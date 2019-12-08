@@ -1257,4 +1257,4 @@ void cpuStep(){
   }
 }
 
-#pragma GCC pop_options
+//#pragma GCC pop_options
