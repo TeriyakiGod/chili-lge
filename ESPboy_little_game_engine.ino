@@ -267,6 +267,7 @@ void setup() {
   EEPROM.begin(EEPROM_SIZE);
  #ifdef ESPBOY
   Wire.begin();
+  Wire.setClock(1000000);
   Serial.println();
   Serial.println(F("ESPboy"));
   scani2c();
