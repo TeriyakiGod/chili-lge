@@ -2,6 +2,8 @@
 ESPboy keyboard module class
 for www.ESPboy.com project by RomanS
 thanks to Plague for help with coding
+
+
      COL0  COL1  COL2  COL3  COL4
 ROW0   Q      E     R     U     O
 ROW1   W      S     G     H     L
