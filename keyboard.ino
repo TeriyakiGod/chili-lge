@@ -148,30 +148,28 @@ uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
         }
         return pos;
       }
-     
-      if((char)keybModule.getLastPressedKey() == '<')
-       {
+      if((char)keybModule.getLastPressedKey() == '<'){
          if(pos > 0){
-         buf[pos] = 0;
-         pos--;}
+           buf[pos] = 0;
+           pos--;
+         }
        }
-      else
-      {
-       if(pos < len){
-         buf[pos] = (char)keybModule.getLastPressedKey();
-         pos++;
-       }
+      else{
+         if(pos < len){
+           buf[pos] = (char)keybModule.getLastPressedKey();
+           pos++;
+         }
       }
-         tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
-         tft.setCursor(kx + 4,ky + 3);
-         for(int i = max(0, pos - 10); i < pos; i++)
-           tft.print(buf[i]);
-         tft.setTextColor(0x6d2d);
-         tft.setCursor(kx + 100 - ((pos > 9) ? ((pos > 99)? 12: 6) : 0) - ((len > 9) ? ((len > 99)? 12: 6) : 0), ky + 3);
-         tft.print(pos);
-         tft.print('/');
-         tft.print(len);
-         tft.setTextColor(0xffff);
+      tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
+      tft.setCursor(kx + 4,ky + 3);
+      for(int i = max(0, pos - 10); i < pos; i++)
+        tft.print(buf[i]);
+      tft.setTextColor(0x6d2d);
+      tft.setCursor(kx + 100 - ((pos > 9) ? ((pos > 99)? 12: 6) : 0) - ((len > 9) ? ((len > 99)? 12: 6) : 0), ky + 3);
+      tft.print(pos);
+      tft.print('/');
+      tft.print(len);
+      tft.setTextColor(0xffff);
     }
   #endif
     getKey();
