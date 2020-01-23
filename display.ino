@@ -10,6 +10,8 @@ struct sprite {
   uint16_t address;
   int16_t x;
   int16_t y;
+  int16_t previousx;
+  int16_t previousy;
   uint8_t width;
   uint8_t height;
   int8_t speedx;
@@ -172,6 +174,8 @@ void display_init(){
     sprite_table[i].address = 0;
     sprite_table[i].x = -255;
     sprite_table[i].y = -255;
+    sprite_table[i].previousx = -255;
+    sprite_table[i].previousy = -255;
     sprite_table[i].width = 8;
     sprite_table[i].height = 8;
     sprite_table[i].speedx = 0;
@@ -465,7 +469,7 @@ int8_t getSpriteInXY(int16_t x, int16_t y){
 
 inline void moveSprites(){
   for(uint8_t i = 0; i < 32; i++){
-    if(sprite_table[i].lives > 0){   
+    if(sprite_table[i].lives > 0){  
       sprite_table[i].speedy += sprite_table[i].gravity;
       sprite_table[i].x += sprite_table[i].speedx;
       sprite_table[i].y += sprite_table[i].speedy;
@@ -590,24 +594,34 @@ void testSpriteCollision(){
         }
       }
       if((SPRITE_IS_SOLID(n)) && tile.adr > 0){
-              if(getTileInXY(x0, y0) || getTileInXY(x0 + sprite_table[n].width, y0)
+            x0 = sprite_table[n].x >> 2;
+            y0 = sprite_table[n].y >> 2;
+            if(getTileInXY(x0, y0) || getTileInXY(x0 + sprite_table[n].width, y0)
               || getTileInXY(x0 , y0 + sprite_table[n].height) || getTileInXY(x0 + sprite_table[n].width, y0 + sprite_table[n].height)){
                 sprite_table[n].y = sprite_table[n].y - sprite_table[n].speedy;
+                sprite_table[n].speedy = sprite_table[n].speedy / 2 - sprite_table[n].gravity;
                 y0 = sprite_table[n].y >> 2;
-                if(getTileInXY(x0, y0) 
-                  || getTileInXY(x0 + sprite_table[n].width, y0)|| getTileInXY(x0, y0 + sprite_table[n].height)
-                  || getTileInXY(x0 + sprite_table[n].width,y0 + sprite_table[n].height)){
+                if(getTileInXY(x0, y0) || getTileInXY(x0 + sprite_table[n].width, y0)
+                  || getTileInXY(x0 , y0 + sprite_table[n].height) || getTileInXY(x0 + sprite_table[n].width, y0 + sprite_table[n].height)){
                     sprite_table[n].x = sprite_table[n].x - sprite_table[n].speedx;
                     sprite_table[n].speedx = (sprite_table[n].x - (sprite_table[n].x - sprite_table[n].speedx)) / 2;
                   }
-                sprite_table[n].speedy = sprite_table[n].speedy / 2 - sprite_table[n].gravity;
                 x0 = sprite_table[n].x >> 2;
                 y0 = sprite_table[n].y >> 2;
-                if(getTileInXY(x0, y0 + sprite_table[n].height) || getTileInXY(x0 + sprite_table[n].width, y0 + sprite_table[n].height)){
-                    sprite_table[n].y--;
+                if(getTileInXY(x0, y0) || getTileInXY(x0 + sprite_table[n].width, y0)
+                  || getTileInXY(x0 , y0 + sprite_table[n].height) || getTileInXY(x0 + sprite_table[n].width, y0 + sprite_table[n].height)){
+                    sprite_table[n].x = sprite_table[n].previousx;
+                    sprite_table[n].y = sprite_table[n].previousy;
                   }
+                else{
+                  sprite_table[n].previousx = sprite_table[n].x;
+                  sprite_table[n].previousy = sprite_table[n].y;
+                }
               }
-         
+              else{
+                sprite_table[n].previousx = sprite_table[n].x;
+                sprite_table[n].previousy = sprite_table[n].y;
+              }
         }
         
     }
@@ -641,6 +655,8 @@ void setSpr(uint16_t n, uint16_t adr){
 void setSprPosition(int8_t n, uint16_t x, uint16_t y){
   sprite_table[n].x = x << 2;
   sprite_table[n].y = y << 2;
+  sprite_table[n].previousx = x << 2;
+  sprite_table[n].previousy = y << 2;
 }
 
 void spriteSetDirectionAndSpeed(int8_t n, uint16_t speed, int16_t dir){
@@ -1268,8 +1284,10 @@ void scrollScreen(uint8_t step, uint8_t direction){
         screen[SCREEN_ADDR((clipx1 - 1) / 2, y)] = bufPixel;
       }
       for(uint8_t n = 0; n < 32; n++)
-        if(SPRITE_IS_SCROLLED(n))
+        if(SPRITE_IS_SCROLLED(n) && !isClip){
           sprite_table[n].x -= 8;
+          sprite_table[n].previousx -= 8;
+        }
     }
     else if(direction == 1){
       for(uint8_t x = clipx0 / 2; x < clipx1 / 2; x++){
@@ -1284,8 +1302,10 @@ void scrollScreen(uint8_t step, uint8_t direction){
         screen[SCREEN_ADDR(x, clipy1 - 1)] = bufPixel;
       }
       for(uint8_t n = 0; n < 32; n++)
-        if(SPRITE_IS_SCROLLED(n))
+        if(SPRITE_IS_SCROLLED(n) && !isClip){
           sprite_table[n].y -= 4;
+          sprite_table[n].previousy -= 4;
+        }
     }
     else if(direction == 0){
       for(uint8_t y = clipy0; y < clipy1; y++){
@@ -1300,8 +1320,10 @@ void scrollScreen(uint8_t step, uint8_t direction){
         screen[SCREEN_ADDR(clipx0 / 2, y)] = bufPixel;
       }
       for(uint8_t n = 0; n < 32; n++)
-        if(SPRITE_IS_SCROLLED(n))
+        if(SPRITE_IS_SCROLLED(n) && !isClip){
           sprite_table[n].x += 8;
+          sprite_table[n].previousx += 8;
+        }
     }
     else {
       for(uint8_t x = clipx0 / 2; x < clipx1 / 2; x++){
@@ -1316,8 +1338,10 @@ void scrollScreen(uint8_t step, uint8_t direction){
         screen[SCREEN_ADDR(x, clipy0)] = bufPixel;
       }
       for(uint8_t n = 0; n < 32; n++)
-        if(SPRITE_IS_SCROLLED(n))
+        if(SPRITE_IS_SCROLLED(n) && !isClip){
           sprite_table[n].y += 4;
+          sprite_table[n].previousy += 4;
+        }
     }
     if(tile.adr > 0 && !isClip)
       tileDrawLine(step, direction);
@@ -1435,6 +1459,10 @@ int8_t getCharY(){
 }
 
 void printc(char c, uint8_t fc, uint8_t bc){
+  if(regy > 15){
+      regy = 15;
+      charLineUp(1);
+    }
   if(c == '\n'){
     fillRect(regx * 6, regy * 8, 127 - regx * 6, 8, bgcolor);
     for(uint8_t i = regx; i <= 21; i++){
@@ -1442,23 +1470,15 @@ void printc(char c, uint8_t fc, uint8_t bc){
     }
     regy++;
     regx = 0;
-    if(regy > 15){
-      regy = 15;
-      charLineUp(1);
-    }
   }
   else if(c == '\t'){
     for(uint8_t i = 0; i <= regx % 5; i++){
       fillRect(regx * 6, regy * 8, 6, 8, bgcolor);
       charArray[regx + regy * 21] = ' ';
       regx++;
-      if(regx > 21){
+      if(regx > 20){
         regy++;
         regx = 0;
-        if(regy > 15){
-          regy = 15;
-          charLineUp(1);
-        }
       }
     }
   }
@@ -1470,10 +1490,6 @@ void printc(char c, uint8_t fc, uint8_t bc){
     if(regx > 20){
       regy++;
       regx = 0;
-      if(regy > 15){
-        regy = 15;
-        charLineUp(1);
-      }
     }
   }
 }
@@ -1534,7 +1550,7 @@ void drwRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1){
   drawFHLine(x0, x1, y0);
   drawFHLine(x0, x1, y1);
   drawFVLine(x0, y0, y1);
-  drawFVLine(x1, y1, y1);
+  drawFVLine(x1, y0, y1);
 }
 
 void fillRect(int8_t x, int8_t y, uint8_t w, uint8_t h, uint8_t c){
