@@ -1007,42 +1007,66 @@ void cpuStep(){
               reg1 = (op2 & 0xf);
               adr = reg[reg1];
               drwRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-            break;
+              break;
             case 0x60:
               //FRECT R     D16R
               reg1 = (op2 & 0xf);
               adr = reg[reg1];
               fllRect(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-            break;
+              break;
             case 0x70:
               //DCIRC R     D17R
               reg1 = (op2 & 0xf);
               adr = reg[reg1];
               drwCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
-            break;
+              break;
             case 0x80:
               //FCIRC R     D18R
               reg1 = (op2 & 0xf);
               adr = reg[reg1];
               fllCirc(readInt(adr + 4), readInt(adr + 2), readInt(adr));
-            break;
+              break;
             case 0x90:
               //DTRIANG R   D19R
               reg1 = (op2 & 0xf);
               adr = reg[reg1];
               drwTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-            break;
+              break;
             case 0xA0:
               //FTRIANG R   D1AR
               reg1 = (op2 & 0xf);
               adr = reg[reg1];
               fllTriangle(readInt(adr + 10), readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-            break;
+              break;
             case 0xB0:
               //PUTF R      D1BR
               reg1 = (op2 & 0xf);
               printfix(reg[reg1], color, bgcolor);
-            break;
+              break;
+            case 0xC0:
+              // DRWCHAR R  D1 CR
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно y, x, char
+              drawChar(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+              break;
+            case 0xD0:
+              // DRWSTR R D1 DR
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно y, x, string
+              drawString(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+              break;
+            case 0xE0:
+              // FONTLOAD R D1 ER
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно end, start, adr
+              fontload(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+              break;
+            case 0xF0:
+              // FONTSIZE R D1 FR
+              reg1 = (op2 & 0xf);
+              adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно fontheight, fontwidth, imgheight, imgwidth
+              fontsize(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+              break;
           }
           break;
         case 0xD2: 
@@ -1159,13 +1183,24 @@ void cpuStep(){
                 adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y0, x0
                 setClip(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
                 break;
+              case 0xC0:
+                // SETFPS R   D4 CR
+                reg1 = op2 & 0xf;
+                if(reg[reg1] >= 1 && reg[reg1] <= 40)
+                  timeForRedraw = 1000 / reg[reg1];
+                break;
+              case 0xD0:
+                // SETCTILE R D4 DR
+                reg1 = op2 & 0xf;
+                setTileCollisionMap(reg[reg1]);
+                break;
             }
             break;
         case 0xD5:
           // LDSPRT R,R   D5RR
           reg1 = (op2 & 0xf0) >> 4;//номер спрайта
           reg2 = op2 & 0xf;//адрес спрайта
-          setSpr(reg[reg1] & 0x1f, reg[reg2]);
+          setSpr((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2]);
           break;
         case 0xD6:
           // SPALET R,R   D6 RR
@@ -1215,7 +1250,7 @@ void cpuStep(){
           // SPRGTX R,X   DC RX
           reg1 = (op2 & 0xf0) >> 4;//num
           reg2 = op2 & 0xf;//value
-          reg[reg1] = getSpriteValue(reg[reg1] & 31, reg[reg2]);
+          reg[reg1] = getSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2]);
           break;
         case 0xDE:
           // AGBSPR R,R     DE RR
@@ -1227,7 +1262,7 @@ void cpuStep(){
           // GTILEXY R,R      DF RR
           reg1 = (op2 & 0xf0) >> 4;
           reg2 = op2 & 0xf;
-          reg[reg1] = getTileInXY(reg[reg1], reg[reg2]);
+          reg[reg1] = getTileInXY(reg[reg1], reg[reg2], 0);
           break;
       }
       break;
@@ -1236,16 +1271,16 @@ void cpuStep(){
       reg1 = (op1 & 0xf);//номер спрайта
       reg2 = (op2 & 0xf0) >> 4;//x
       reg3 = op2 & 0xf;//y
-      setSprPosition(reg[reg1] & 0x1f, reg[reg2], reg[reg3]);
-      if(getSpriteValue(reg[reg1] & 0x1f, 7) < 1)
-        setSpriteValue(reg[reg1] & 0x1f, 7, 1);
+      setSprPosition((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2], reg[reg3]);
+      if(getSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, 7) < 1)
+        setSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, 7, 1);
       break;
     case 0xF:
       // SSPRTV R,R,R FR RR
       reg1 = (op1 & 0xf);//номер спрайта
       reg2 = (op2 & 0xf0) >> 4;//type
       reg3 = op2 & 0xf;//value
-      setSpriteValue(reg[reg1] & 0x1f, reg[reg2], reg[reg3]); 
+      setSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2], reg[reg3]); 
       break;
   }
 }
