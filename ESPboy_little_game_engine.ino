@@ -306,7 +306,8 @@ void setup() {
   tft.setTextColor(0xFFE0);
   tft.setCursor(10,102);
   tft.print(F("Little game engine"));
-  tft.setCursor(10,112);
+  tft.setTextColor(TFT_DARKGREY);
+  tft.setCursor(10,120);
   tft.print(F(BUILD_VERSION_MAJOR));
   tft.print('.');
   tft.print(F(BUILD_VERSION_MINOR));
