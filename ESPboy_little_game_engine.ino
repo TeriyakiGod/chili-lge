@@ -343,7 +343,7 @@ void setup() {
   else{
     Serial.println(F("SPIFFS Initialization...failed"));
   }
-  randomSeed(ESP.getVcc());
+  randomSeed(RANDOM_REG32);
   getKey();
   //go to web file manager
   if(thiskey & 32){//key B
