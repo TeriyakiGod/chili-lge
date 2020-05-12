@@ -291,6 +291,8 @@ void setup() {
      mcp.pinMode(i, INPUT);
      mcp.pullUp(i, HIGH);
   }
+  mcp.pinMode(LEDLOCK, OUTPUT);
+  mcp.digitalWrite(LEDLOCK, HIGH);
   myled.begin();
   myled.setRGB(0, 0, 0);
   delay(50);

@@ -14,6 +14,7 @@
   #define LEDquantity       1
   #define LEDPIN            D4
   #define SOUNDPIN          D3
+  #define LEDLOCK           9
 #else
   #define APSSID "ESPlge"
   #define APHOST "esplge"
