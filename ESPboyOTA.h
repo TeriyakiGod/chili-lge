@@ -10,6 +10,8 @@ thanks to DmitryL (Plague) for help, tests and advices
 
 #include <Adafruit_MCP23017.h>
 #include <TFT_eSPI.h>
+#include <FS.h> 
+using fs::FS;
 #include <HTTPSRedirect.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266httpUpdate.h>
