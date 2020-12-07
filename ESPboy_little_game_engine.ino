@@ -295,6 +295,7 @@ void setup() {
   mcp.digitalWrite(LEDLOCK, HIGH);
   myled.begin();
   myled.setRGB(0, 0, 0);
+  myled.setRGB(0, 0, 0);
   delay(50);
   if (keybModule.begin())
     Serial.println(F("\nESPboy keyboard module found"));
