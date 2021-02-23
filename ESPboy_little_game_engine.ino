@@ -267,7 +267,6 @@ void coos_info(void){
 }
 
 void setup() {
-  WiFiOff();// turn off ESP8266 RF
   system_update_cpu_freq(FREQUENCY);
   Serial.begin(115200);
   EEPROM.begin(EEPROM_SIZE);
@@ -379,6 +378,8 @@ void setup() {
     }
     
   }
+
+  WiFiOff();// turn off ESP8266 RF
   memoryAlloc();
   loadSplashscreen();
   cpuInit();
