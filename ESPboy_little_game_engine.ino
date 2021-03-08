@@ -344,10 +344,10 @@ void setup() {
   tft.setRotation(1);
  #endif
   tft.fillScreen(0x0000);
-  tft.setTextSize(1);
-  tft.setTextColor(0xFFE0);
-  tft.setCursor(2, 2);
-  tft.print(F("LittleFS Initialize... Please wait"));
+  //tft.setTextSize(1);
+  //tft.setTextColor(0xFFE0);
+  //tft.setCursor(2, 2);
+  //tft.print(F("LittleFS Initialize... Please wait"));
  
   //Initialize File System
   LittleFSConfig cfg;
