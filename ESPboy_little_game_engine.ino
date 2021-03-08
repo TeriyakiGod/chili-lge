@@ -220,7 +220,7 @@ void coos_screen(void){
 }
 
 void ICACHE_RAM_ATTR timer_tick(void){
-  for(int8_t i = 0; i < 8; i++){
+  for(int16_t i = 0; i < 8; i++){
     if(timers[i] >= 1)
       timers[i] --;
   }
@@ -267,6 +267,7 @@ void coos_info(void){
 }
 
 void setup() {
+  delay(1);
   system_update_cpu_freq(FREQUENCY);
   Serial.begin(115200);
   EEPROM.begin(EEPROM_SIZE);
@@ -293,10 +294,7 @@ void setup() {
      mcp.pinMode(i, INPUT);
      mcp.pullUp(i, HIGH);
   }
-  mcp.pinMode(LEDLOCK, OUTPUT);
-  mcp.digitalWrite(LEDLOCK, HIGH);
   myled.begin();
-  myled.setRGB(0, 0, 0);
   myled.setRGB(0, 0, 0);
   delay(50);
   if (keybModule.begin())
@@ -346,19 +344,20 @@ void setup() {
   tft.setRotation(1);
  #endif
   tft.fillScreen(0x0000);
-  
+  tft.setTextSize(1);
+  tft.setTextColor(0xFFE0);
+  tft.setCursor(2, 2);
+  tft.print(F("LittleFS Initialize... Please wait"));
+ 
   //Initialize File System
   LittleFSConfig cfg;
   cfg.setAutoFormat(false);
   LittleFS.setConfig(cfg);
   tft.setTextColor(TFT_GREEN);
-    
   if(LittleFS.begin()){
     Serial.println(F("LittleFS Initialize....ok"));
   }
-  else{  
-    tft.fillScreen(0x0000);
-    tft.setCursor(2, 2);
+  else{
     tft.print(F("LittleFS init FAILED"));
     tft.setCursor(2, 10);
     tft.print(F("LittleFS FORMATING..."));
@@ -376,10 +375,10 @@ void setup() {
       tft.print(F("Formatting FAILED"));
       delay(2000);
     }
-    
   }
-
-  WiFiOff();// turn off ESP8266 RF
+  // turn off ESP8266 RF
+  WiFiOff();
+  delay(1);
   memoryAlloc();
   loadSplashscreen();
   cpuInit();
