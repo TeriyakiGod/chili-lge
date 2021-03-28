@@ -294,7 +294,7 @@ void setup() {
      mcp.pinMode(i, INPUT);
      mcp.pullUp(i, HIGH);
   }
-  myled.begin();
+  myled.begin(&mcp);
   myled.setRGB(0, 0, 0);
   delay(50);
   if (keybModule.begin())
