@@ -14,18 +14,16 @@
   #include <Adafruit_MCP23017.h>
   #include <Adafruit_MCP4725.h>
   #include <ESP8266httpUpdate.h>
-  #include "ESPboyOTA.h"
   #include "ESPboyLogo.h"
   #include "lib/ESPboy_keyboard.h"
   #include "lib/ESPboy_keyboard.cpp"
-  #include "lib/ESPboy_LED.h"
-  #include "lib/ESPboy_LED.cpp"
+  #include "lib/ESPboyLED.h"
+  #include "lib/ESPboyLED.cpp"
   
   keyboardModule keybModule(1,1,7000);
   Adafruit_MCP23017 mcp;
   Adafruit_MCP4725 dac;
   ESPboyLED myled;
-  ESPboyOTA* OTAobj = NULL;
 #endif
 
 Coos <4, 0> coos;
@@ -332,11 +330,6 @@ void setup() {
   }
   dac.setVoltage(4095, true);
   delay(1000);
-  getKey();
-  //go to OTA
-  if(thiskey & 32 || thiskey & 16){//key AB
-    OTAobj = new ESPboyOTA(&tft, &mcp);
-  }
  #else
   Wire.begin(D2, D1);
   geti2cAdress();
@@ -344,10 +337,6 @@ void setup() {
   tft.setRotation(1);
  #endif
   tft.fillScreen(0x0000);
-  //tft.setTextSize(1);
-  //tft.setTextColor(0xFFE0);
-  //tft.setCursor(2, 2);
-  //tft.print(F("LittleFS Initialize... Please wait"));
  
   //Initialize File System
   LittleFSConfig cfg;

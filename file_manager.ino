@@ -433,7 +433,8 @@ void softwareMenu(){
     #ifdef ESPBOY
       else if(pos == 2){
         memoryFree();
-        OTAobj = new ESPboyOTA(&tft, &mcp);
+        //OTAobj = new ESPboyOTA(&tft, &mcp);
+        return;
       }
     #endif
       return;
