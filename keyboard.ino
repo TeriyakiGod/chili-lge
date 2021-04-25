@@ -45,7 +45,7 @@ void scani2c(){
 void getKey(){
   uint8_t keyread;
   thiskey = 0;
-  keyread = mcp.readGPIOAB()&255;
+  keyread = myESPboy.mcp.readGPIOAB()&255;
   if(!(keyread&1)) thiskey |= 4; 
   if(!(keyread&2)) thiskey |= 1;
   if(!(keyread&4)) thiskey |= 2;
@@ -90,12 +90,21 @@ const uint8_t v_keysShift[] PROGMEM = "!@#$%^&*(){}QWERTYUIOP|?ASDFGHJKL:+ ZXCVB
 uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
   int16_t x = 4, y = 4, px = 0, py = 0, pos = 0;
   uint8_t isShift = 0;
+#ifdef ESPBOY
+  TFT_eSprite img = TFT_eSprite(&myESPboy.tft);
+#else
   TFT_eSprite img = TFT_eSprite(&tft);
+#endif  
   img.setColorDepth(1);
   img.createSprite(120, 32);
   img.setTextSize(2);
+#ifdef ESPBOY
+  myESPboy.tft.fillRect(kx, ky, 124, 48, 0x0000);
+  myESPboy.tft.drawRect(kx, ky, 124, 48, 0xFC00);  
+#else
   tft.fillRect(kx, ky, 124, 48, 0x0000);
   tft.drawRect(kx, ky, 124, 48, 0xFC00);  
+#endif
   getKey();
   while(1){
      while(x != px * 16 || y !=  py * 16){
@@ -135,7 +144,11 @@ uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
           }
         }
         img.pushSprite(kx + 2, ky + 14);
+        #ifdef ESPBOY
+        myESPboy.tft.drawRect(kx + 53, ky + 13, 18, 17, 0xFC00);
+        #else
         tft.drawRect(kx + 53, ky + 13, 18, 17, 0xFC00);
+        #endif
         delay(10);
     }
     delay(200);
@@ -161,16 +174,16 @@ uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
            pos++;
          }
       }
-      tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
-      tft.setCursor(kx + 4,ky + 3);
+      myESPboy.tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
+      myESPboy.tft.setCursor(kx + 4,ky + 3);
       for(int i = max(0, pos - 10); i < pos; i++)
-        tft.print(buf[i]);
-      tft.setTextColor(0x6d2d);
-      tft.setCursor(kx + 100 - ((pos > 9) ? ((pos > 99)? 12: 6) : 0) - ((len > 9) ? ((len > 99)? 12: 6) : 0), ky + 3);
-      tft.print(pos);
-      tft.print('/');
-      tft.print(len);
-      tft.setTextColor(0xffff);
+      myESPboy.tft.print(buf[i]);
+      myESPboy.tft.setTextColor(0x6d2d);
+      myESPboy.tft.setCursor(kx + 100 - ((pos > 9) ? ((pos > 99)? 12: 6) : 0) - ((len > 9) ? ((len > 99)? 12: 6) : 0), ky + 3);
+      myESPboy.tft.print(pos);
+      myESPboy.tft.print('/');
+      myESPboy.tft.print(len);
+      myESPboy.tft.setTextColor(0xffff);
     }
   #endif
     getKey();
@@ -208,6 +221,18 @@ uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
           buf[pos] = 0;
           pos--;
         }
+      #ifdef ESPBOY
+        myESPboy.tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
+        myESPboy.tft.setCursor(kx + 4,ky + 3);
+        for(int i = max(0, pos - 10); i < pos; i++)
+          myESPboy.tft.print(buf[i]);
+        myESPboy.tft.setTextColor(0x6d2d);
+        myESPboy.tft.setCursor(kx + 100 - ((pos > 9) ? ((pos > 99)? 12: 6) : 0) - ((len > 9) ? ((len > 99)? 12: 6) : 0), ky + 3);
+        myESPboy.tft.print(pos);
+        myESPboy.tft.print('/');
+        myESPboy.tft.print(len);
+        myESPboy.tft.setTextColor(0xffff);
+      #else
         tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
         tft.setCursor(kx + 4,ky + 3);
         for(int i = max(0, pos - 10); i < pos; i++)
@@ -218,6 +243,7 @@ uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
         tft.print('/');
         tft.print(len);
         tft.setTextColor(0xffff);
+      #endif
         delay(200);
       }
       else if(py == 2 && px == 11){
@@ -234,6 +260,19 @@ uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
             buf[pos] = pgm_read_byte(&v_keysShift[px + py * 12]);
           else
             buf[pos] = pgm_read_byte(&v_keys[px + py * 12]);
+         #ifdef ESPBOY
+          myESPboy.tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
+          myESPboy.tft.setCursor(kx + 4,ky + 3);
+          pos++;
+          for(int i = max(0, pos - 10); i < pos; i++)
+            myESPboy.tft.print(buf[i]);
+          myESPboy.tft.setTextColor(0x6d2d);
+          myESPboy.tft.setCursor(kx + 100 - ((pos > 9) ? ((pos > 99)? 12: 6) : 0) - ((len > 9) ? ((len > 99)? 12: 6) : 0), ky + 3);
+          myESPboy.tft.print(pos);
+          myESPboy.tft.print('/');
+          myESPboy.tft.print(len);
+          myESPboy.tft.setTextColor(0xffff);
+         #else
           tft.fillRect(kx + 1, ky + 1, 122, 10, 0x0000);
           tft.setCursor(kx + 4,ky + 3);
           pos++;
@@ -245,6 +284,7 @@ uint8_t virtualKeyboard(uint8_t kx, uint8_t ky, char buf[], uint8_t len){
           tft.print('/');
           tft.print(len);
           tft.setTextColor(0xffff);
+        #endif
         }
       }
     }

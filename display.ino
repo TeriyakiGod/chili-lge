@@ -343,7 +343,11 @@ void setScreenResolution(uint16_t nw, uint16_t nh){
   displayXOffset = (SCREEN_REAL_WIDTH - rscreenWidth) / 2;
   for(int i = 0; i < 4; i++)
       line_is_draw[i] = 0xffffffff;
-  tft.fillScreen(0x0000);
+  #ifdef ESPBOY
+   myESPboy.tft.fillScreen(0x0000);
+  #else
+   tft.fillScreen(0x0000);
+  #endif
 }
 
 uint16_t getDisplayXOffset(){
@@ -360,7 +364,11 @@ void redrawScreen(){
       if(line_is_draw[y2 >> 5] & (1 << (y2 & 31))){
         startx = displayXOffset;
         endx = displayXOffset + rscreenWidth;
-        tft.setAddrWindow(startx, i, endx, i  + 1);
+        #ifdef ESPBOY
+         myESPboy.tft.setAddrWindow(startx, i, endx, i  + 1);
+        #else
+         tft.setAddrWindow(startx, i, endx, i  + 1);
+        #endif
         if(prevy2 != y2)
           for (uint16_t j = 0; j < rscreenWidth; j++) {
             x2 = ((j * x_ratio) >> 16);
@@ -379,7 +387,11 @@ void redrawScreen(){
             }
         }
         prevy2 = y2;
-        tft.pushColors(pix_buffer, endx - startx);
+        #ifdef ESPBOY
+         myESPboy.tft.pushColors(pix_buffer, endx - startx);
+        #else
+         tft.pushColors(pix_buffer, endx - startx);
+        #endif
       }              
     }
     for(uint16_t i = 0; i < 4; i++)

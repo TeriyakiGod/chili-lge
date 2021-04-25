@@ -1,35 +1,30 @@
 #include <Arduino.h>
 #include <Ticker.h>
-#include <SPI.h>
-#include <Wire.h>
 #include <LittleFS.h>
-#include <TFT_eSPI.h>
 #include <EEPROM.h>
-#include "ESP8266WiFi.h"
 #include "user_interface.h"
 #include "settings.h"
 #include "acoos.h"
+#include "ESP8266WiFi.h"
 
 #ifdef ESPBOY
-  #include <Adafruit_MCP23017.h>
-  #include <Adafruit_MCP4725.h>
-  #include <ESP8266httpUpdate.h>
-  #include "ESPboyLogo.h"
+  #include "lib/ESPboyInit.h"
+  #include "lib/ESPboyInit.cpp"
   #include "lib/ESPboy_keyboard.h"
   #include "lib/ESPboy_keyboard.cpp"
-  #include "lib/ESPboyLED.h"
-  #include "lib/ESPboyLED.cpp"
+
+    keyboardModule keybModule(1,1,7000);
+    ESPboyInit myESPboy;
   
-  keyboardModule keybModule(1,1,7000);
-  Adafruit_MCP23017 mcp;
-  Adafruit_MCP4725 dac;
-  ESPboyLED myled;
+#else
+  #include <TFT_eSPI.h>
+  #include <SPI.h>
+  #include <Wire.h>
+    TFT_eSPI tft = TFT_eSPI();  
 #endif
 
 Coos <4, 0> coos;
 
-// Use hardware SPI
-TFT_eSPI tft = TFT_eSPI();
 
 uint8_t i2c_adress;
 uint8_t thiskey;
@@ -49,6 +44,7 @@ static const uint16_t bpalette[] = {
     0x0020, 0xE718, 0xB9A8, 0x7DB6, 0x61EB, 0x6D2D, 0x21EC, 0xD5CA,
     0xAC4D, 0x42CB, 0xBB09, 0x3186, 0x73AE, 0x8D4B, 0x3DF9, 0xBDD7
 };
+
 uint16_t palette[16] __attribute__ ((aligned));
 uint16_t sprtpalette[16] __attribute__ ((aligned));
 
@@ -277,94 +273,80 @@ void setup() {
   Serial.print(F(" build "));
   Serial.print(F(__DATE__));
   randomSeed(RANDOM_REG32);
+  
  #ifdef ESPBOY
   Serial.println();
   Serial.println(F("ESPboy"));
   scani2c();
-  //DAC init
-  dac.begin(MCP4725address);
-  delay(100);
-  dac.setVoltage(0, true);
-  //buttons on mcp23017 init
-  mcp.begin(MCP23017address);
-  delay (100);
-  for(int i = 0; i < 8; i++){
-     mcp.pinMode(i, INPUT);
-     mcp.pullUp(i, HIGH);
-  }
-  myled.begin(&mcp);
-  myled.setRGB(0, 0, 0);
-  delay(50);
+
   if (keybModule.begin())
     Serial.println(F("\nESPboy keyboard module found"));
-  //initialize LCD
-  mcp.pinMode(csTFTMCP23017pin, OUTPUT);
-  mcp.digitalWrite(csTFTMCP23017pin, LOW);
-  tft.begin();
-  delay(100);           
-  tft.setRotation(0);
-  tft.fillScreen(0x0000);
-  tft.setTextSize(1);
-  tft.drawXBitmap(30, 24, ESPboyLogo, 68, 64, 0xFFE0);
-  tft.setTextColor(0xFFE0);
-  tft.setCursor(10,102);
-  tft.print(F("Little game engine"));
-  tft.setTextColor(TFT_DARKGREY);
-  tft.setCursor(10,120);
-  tft.print(F(BUILD_VERSION_MAJOR));
-  tft.print('.');
-  tft.print(F(BUILD_VERSION_MINOR));
-  tft.print(' ');
-  tft.print(F(__DATE__));
-  //sound init and test
-  pinMode(SOUNDPIN, OUTPUT);
-  tone(SOUNDPIN, 200, 100);
-  delay(100);
-  tone(SOUNDPIN, 100, 100);
-  delay(100);
-  noTone(SOUNDPIN);
-  //LCD backlit on
-  for (int count = 0; count < 1000; count += 50){
-    dac.setVoltage(count, false);
-    delay(50);
-  }
-  dac.setVoltage(4095, true);
-  delay(1000);
+
+  //Init ESPboy
+  myESPboy.begin("Little game engine");
+
+
+  myESPboy.tft.fillScreen(0x0000);
+  
  #else
   Wire.begin(D2, D1);
   geti2cAdress();
   tft.init();            // initialize LCD
   tft.setRotation(1);
- #endif
   tft.fillScreen(0x0000);
+ #endif
+
  
   //Initialize File System
   LittleFSConfig cfg;
   cfg.setAutoFormat(false);
   LittleFS.setConfig(cfg);
+ #ifdef ESPBOY
+  myESPboy.tft.setTextColor(TFT_GREEN);
+ #else
   tft.setTextColor(TFT_GREEN);
+ #endif
   if(LittleFS.begin()){
     Serial.println(F("LittleFS Initialize....ok"));
   }
   else{
+   #ifdef ESPBOY
+    myESPboy.tft.setCursor(2, 0);
+    myESPboy.tft.print(F("LittleFS init FAILED"));
+    myESPboy.tft.setCursor(2, 10);
+    myESPboy.tft.print(F("FORMATING..."));
+   #else
+    myESPboy.tft.setCursor(2, 0);
     tft.print(F("LittleFS init FAILED"));
     tft.setCursor(2, 10);
-    tft.print(F("LittleFS FORMATING..."));
-    Serial.println(F("LittleFS init FAILED. Formatting..."));
+    tft.print(F("FORMATING..."));
+   #endif
+    Serial.println(F("LittleFS init FAILED. Formating..."));
     if(LittleFS.format()){
-      Serial.println(F("Formatting DONE"));
+      Serial.println(F("Formating DONE"));
+     #ifdef ESPBOY
+      myESPboy.tft.setCursor(2, 18);
+      myESPboy.tft.print(F("DONE!"));
+     #else
       tft.setCursor(2, 18);
-      tft.print(F("Formatting DONE!"));
+      tft.print(F("DONE!"));
+     #endif
       LittleFS.begin();
       delay(2000);
     }
     else {
       Serial.println(F("Formatting FAILED")); 
+     #ifdef ESPBOY
+      myESPboy.tft.setCursor(2, 18);
+      myESPboy.tft.print(F("Formatting FAILED"));
+     #else
       tft.setCursor(2, 18);
       tft.print(F("Formatting FAILED"));
+     #endif 
       delay(2000);
     }
   }
+  
   // turn off ESP8266 RF
   WiFiOff();
   delay(1);
@@ -382,7 +364,6 @@ void setup() {
  #endif
   clearScr(0);
   setColor(1);
-  randomSeed(analogRead(0));
   timer.attach(0.001, timer_tick);
   coos.register_task(coos_cpu); 
   coos.register_task(coos_screen);   

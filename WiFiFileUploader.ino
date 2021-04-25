@@ -7,7 +7,7 @@
 
 const char *ssid = APSSID;
 const char *password = APPSK;
-const char* host = APHOST;
+const char *host = APHOST;
 
 ESP8266WebServer server(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -69,6 +69,19 @@ onclick="document.getElementById('u_h').click();"/><button onclick="document.get
 void startServer(){
   WiFi.forceSleepWake();
   serverSetup();
+ #ifdef ESPBOY
+  myESPboy.tft.fillScreen(0x0000);
+  myESPboy.tft.setTextSize(1);
+  myESPboy.tft.setTextColor(0xffff);
+  myESPboy.tft.setCursor(0,10);
+  myESPboy.tft.print(F("SSID "));
+  myESPboy.tft.print(F(APSSID));
+  myESPboy.tft.print(F("\nPassword "));
+  myESPboy.tft.print(F(APPSK));
+  myESPboy.tft.print(F("\nGo to \nhttp://192.168.4.1"));
+  myESPboy.tft.print(F("\nin a web browser"));
+  myESPboy.tft.print(F("\nPress button A to\nreboot"));
+ #else
   tft.fillScreen(0x0000);
   tft.setTextSize(1);
   tft.setTextColor(0xffff);
@@ -80,6 +93,7 @@ void startServer(){
   tft.print(F("\nGo to \nhttp://192.168.4.1"));
   tft.print(F("\nin a web browser"));
   tft.print(F("\nPress button A to\nreboot"));
+ #endif
   Serial.print(F("FreeHeap:"));
   Serial.println(ESP.getFreeHeap());
   while(1){
