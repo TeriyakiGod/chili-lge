@@ -5,6 +5,7 @@
 #include "user_interface.h"
 #include "settings.h"
 #include "acoos.h"
+#include "ESP8266WiFi.h"
 
 #ifdef ESPBOY
   #include "lib/ESPboyInit.h"
