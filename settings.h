@@ -8,13 +8,6 @@
 #ifdef ESPBOY
   #define APSSID "ESPboy"
   #define APHOST "espboy"
-  #define MCP4725address    0x60
-  #define MCP23017address   0
-  #define csTFTMCP23017pin  8
-  #define LEDquantity       1
-  #define LEDPIN            D4
-  #define SOUNDPIN          D3
-  #define LEDLOCK           9
 #else
   #define APSSID "ESPlge"
   #define APHOST "esplge"
