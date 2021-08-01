@@ -131,11 +131,13 @@ inline void updateRtttl(){
   //play single tone
   if(play_tone.time > 0){
     if(rtttl.delay <= 0){
+      noTone(SOUNDPIN);
       tone(SOUNDPIN, play_tone.freq, 128);
       rtttl.isPlayed = 0;
       return;
     }
     if(play_tone.time & 1){
+      noTone(SOUNDPIN);
       tone(SOUNDPIN, play_tone.freq, 128);
       rtttl.isPlayed = 0;
       return;
@@ -148,6 +150,7 @@ inline void updateRtttl(){
   if(rtttl.delay > 0){
     if(!rtttl.isPlayed){
       rtttl.isPlayed = 1;
+      noTone(SOUNDPIN);
       tone(SOUNDPIN, rtttl.this_tone, rtttl.delay);
     }
     return;

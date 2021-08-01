@@ -204,7 +204,7 @@ void coos_screen(void){
   } 
 }
 
-void ICACHE_RAM_ATTR timer_tick(void){
+void IRAM_ATTR timer_tick(void){
   for(int16_t i = 0; i < 8; i++){
     if(timers[i] >= 1)
       timers[i] --;
