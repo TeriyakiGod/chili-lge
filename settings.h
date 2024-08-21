@@ -1,4 +1,4 @@
-#define ESPBOY
+//#define ESPBOY
 #define RAM_SIZE    20 * 1024
 #define FREQUENCY   160    // valid 80, 160
 #define APPSK  "87654321"
@@ -22,8 +22,8 @@
   #define SCREEN_REAL_WIDTH   128
   #define SCREEN_REAL_HEIGHT  128
 #else
-  #define SCREEN_REAL_WIDTH   320
-  #define SCREEN_REAL_HEIGHT  240
+  #define SCREEN_REAL_WIDTH   128
+  #define SCREEN_REAL_HEIGHT  128
 #endif
 #define SCREEN_SIZE (SCREEN_HEIGHT * SCREEN_WIDTH_BYTES)
 #define SCREEN_ARRAY_DEF SCREEN_SIZE

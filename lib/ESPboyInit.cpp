@@ -19,7 +19,7 @@ void ESPboyInit::begin(const char *appName) {
   dac.setVoltage(0, false);
 
 //mcp23017 init for buttons, LED LOCK and TFT Chip Select pins
-  mcp.begin(MCP23017address);
+  mcp.begin(static_cast<uint8_t>(MCP23017address));
   delay(100);
   for (int i=0;i<8;i++){  
      mcp.pinMode(i, INPUT);

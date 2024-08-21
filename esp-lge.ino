@@ -307,7 +307,7 @@ void setup() {
     myESPboy.tft.setCursor(2, 10);
     myESPboy.tft.print(F("FORMATING..."));
    #else
-    myESPboy.tft.setCursor(2, 0);
+    tft.setCursor(2, 0);
     tft.print(F("LittleFS init FAILED"));
     tft.setCursor(2, 10);
     tft.print(F("FORMATING..."));
