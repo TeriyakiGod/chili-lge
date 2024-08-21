@@ -283,7 +283,7 @@ void setup() {
   Wire.begin(D2, D1);
   geti2cAdress();
   tft.init();            // initialize LCD
-  tft.setRotation(1);
+  tft.setRotation(SCREEN_ROTATION);
   tft.fillScreen(0x0000);
  #endif
 
