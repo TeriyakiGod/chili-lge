@@ -6,24 +6,12 @@
 #include "settings.h"
 #include "acoos.h"
 #include "ESP8266WiFi.h"
+#include <TFT_eSPI.h>
+#include <SPI.h>
+#include <Wire.h>
 
-#ifdef ESPBOY
-  #include "lib/ESPboyInit.h"
-  #include "lib/ESPboyInit.cpp"
-  #include "lib/ESPboy_keyboard.h"
-  #include "lib/ESPboy_keyboard.cpp"
-    ESPboyInit myESPboy;
-    keyboardModule *keybModule=NULL;
-  
-#else
-  #include <TFT_eSPI.h>
-  #include <SPI.h>
-  #include <Wire.h>
-    TFT_eSPI tft = TFT_eSPI();  
-#endif
-
+TFT_eSPI tft = TFT_eSPI();  
 Coos <4, 0> coos;
-
 
 uint8_t i2c_adress;
 uint8_t thiskey;
@@ -257,83 +245,41 @@ void setup() {
   EEPROM.begin(EEPROM_SIZE);
   Serial.println();
   Serial.print(F("version "));
-  Serial.print(F(BUILD_VERSION_MAJOR));
-  Serial.print('.');
-  Serial.print(F(BUILD_VERSION_MINOR));
+  Serial.print(F(BUILD_VERSION));
   Serial.print(F(" build "));
   Serial.print(F(__DATE__));
   randomSeed(RANDOM_REG32);
   
- #ifdef ESPBOY
-  Serial.println();
-  Serial.println(F("ESPboy"));
-  
-  //Init ESPboy
-  myESPboy.begin("Little game engine");
-
-  myESPboy.tft.fillScreen(0x0000);
-
-  keybModule = new keyboardModule(1,1,7000);  
-  //scani2c();
-
-  if (keybModule->begin())
-    Serial.println(F("\nESPboy keyboard module found"));
-  
- #else
-  Wire.begin(D2, D1);
-  geti2cAdress();
   tft.init();            // initialize LCD
   tft.setRotation(SCREEN_ROTATION);
   tft.fillScreen(0x0000);
- #endif
 
  
   //Initialize File System
   LittleFSConfig cfg;
   cfg.setAutoFormat(false);
   LittleFS.setConfig(cfg);
- #ifdef ESPBOY
-  myESPboy.tft.setTextColor(TFT_GREEN);
- #else
   tft.setTextColor(TFT_GREEN);
- #endif
   if(LittleFS.begin()){
     Serial.println(F("LittleFS Initialize....ok"));
   }
   else{
-   #ifdef ESPBOY
-    myESPboy.tft.setCursor(2, 0);
-    myESPboy.tft.print(F("LittleFS init FAILED"));
-    myESPboy.tft.setCursor(2, 10);
-    myESPboy.tft.print(F("FORMATING..."));
-   #else
     tft.setCursor(2, 0);
     tft.print(F("LittleFS init FAILED"));
     tft.setCursor(2, 10);
     tft.print(F("FORMATING..."));
-   #endif
     Serial.println(F("LittleFS init FAILED. Formating..."));
     if(LittleFS.format()){
       Serial.println(F("Formating DONE"));
-     #ifdef ESPBOY
-      myESPboy.tft.setCursor(2, 18);
-      myESPboy.tft.print(F("DONE!"));
-     #else
       tft.setCursor(2, 18);
       tft.print(F("DONE!"));
-     #endif
       LittleFS.begin();
       delay(2000);
     }
     else {
       Serial.println(F("Formatting FAILED")); 
-     #ifdef ESPBOY
-      myESPboy.tft.setCursor(2, 18);
-      myESPboy.tft.print(F("Formatting FAILED"));
-     #else
       tft.setCursor(2, 18);
       tft.print(F("Formatting FAILED"));
-     #endif 
       delay(2000);
     }
   }
@@ -348,11 +294,8 @@ void setup() {
   Serial.println(ESP.getFreeHeap());
   Serial.println(F("print \"vW H\" for change viewport, \"d name\" for delite file,"));
   Serial.println(F("\"s name\" for save file and \"m\" for load to memory"));
- #ifdef ESPBOY
-  setScreenResolution(128, 128);
- #else
-  setScreenResolution(min(SCREEN_REAL_WIDTH, SCREEN_REAL_HEIGHT) - 1, min(SCREEN_REAL_WIDTH, SCREEN_REAL_HEIGHT) - 1);
- #endif
+
+  setScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
   clearScr(0);
   setColor(1);
   timer.attach(0.001, timer_tick);

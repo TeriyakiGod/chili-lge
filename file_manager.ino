@@ -440,12 +440,6 @@ void softwareMenu(){
         memoryFree();
         startServer();
       }
-    #ifdef ESPBOY
-      else if(pos == 2){
-        memoryFree();
-        return;
-      }
-    #endif
       return;
     }
     if(thiskey & 32){
@@ -455,19 +449,10 @@ void softwareMenu(){
 }
 
 void drawVersionInFileList(){
- #ifdef ESPBOY
-  myESPboy.tft.setTextColor(TFT_DARKGREY);
-  myESPboy.tft.setCursor(SCREEN_REAL_WIDTH - 30, SCREEN_REAL_HEIGHT - 7);
-  myESPboy.tft.print(F(BUILD_VERSION_MAJOR));
-  myESPboy.tft.print('.');
-  myESPboy.tft.print(F(BUILD_VERSION_MINOR));
- #else
+  //Print version
   tft.setTextColor(TFT_DARKGREY);
-  tft.setCursor(SCREEN_REAL_WIDTH - 30, SCREEN_REAL_HEIGHT - 7);
-  tft.print(F(BUILD_VERSION_MAJOR));
-  tft.print('.');
-  tft.print(F(BUILD_VERSION_MINOR));
- #endif
+  tft.setCursor(20, SCREEN_REAL_HEIGHT - 8);
+  tft.print(F(BUILD_VERSION));
 }
 
 void fileList(String path) {
@@ -493,14 +478,7 @@ void fileList(String path) {
   display_init();
   setBgColor(0);
   setColor(1);
-  #ifdef ESPBOY
-   myESPboy.tft.fillScreen(0x0000);
-  #else
-   tft.fillScreen(0x0000);
-  #endif
- #ifdef ESPBOY
-  myESPboy.myLED.setRGB(0, 0, 0);
- #endif
+  tft.fillScreen(0x0000);
   for(i = 0; i < 192; i++)
     writeMem(i + 1024 + 192, pgm_read_byte_near(iconBin + i));
   setImageSize(1);

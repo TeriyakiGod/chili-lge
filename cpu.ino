@@ -357,15 +357,7 @@ void unpackingLZ(uint16_t to_adr, uint16_t a, uint16_t num_bytes) {
     }
   }
 
-#ifdef ESPBOY
-void setLedColor(uint16_t r5g6b5){
-  uint8_t r,g,b;
-  r = ((((r5g6b5 >> 11) & 0x1F) * 527) + 23) >> 6;
-  g = ((((r5g6b5 >> 5) & 0x3F) * 259) + 33) >> 6;
-  b = (((r5g6b5 & 0x1F) * 527) + 23) >> 6;
-  myESPboy.myLED.setRGB(r, g, b);
-}
-#endif
+
 
 void cpuRun(uint16_t n){
   uint8_t op1, op2;
@@ -545,10 +537,6 @@ void cpuRun(uint16_t n){
             break;
           case 0x53:
             // SETLED R   530R
-          #ifdef ESPBOY
-            reg1 = op2 & 0xf;
-            setLedColor(reg[reg1]);
-          #endif
             break;
           case 0x54:
               // LOADRT   540R
@@ -1172,10 +1160,10 @@ void cpuRun(uint16_t n){
                 // GETK R     D20R
                 reg1 = (op2 & 0xf);
                 if(strBufLength == 0){
-                  if(getCharY() > 8)
-                    strBufLength = virtualKeyboard(2, 2, strBuf, 16);
-                  else
-                    strBufLength = virtualKeyboard(2, 78, strBuf, 16);
+                  // if(getCharY() > 8)
+                  //   strBufLength = virtualKeyboard(2, 2, strBuf, 16);
+                  // else
+                  //   strBufLength = virtualKeyboard(2, 78, strBuf, 16);
                   if(strBufLength == 0){
                     strBuf[0] = '\n';
                     strBufLength = 1;

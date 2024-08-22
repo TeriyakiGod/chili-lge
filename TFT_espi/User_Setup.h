@@ -4,12 +4,11 @@
 #define TFT_HEIGHT 128
 #define ST7735_GREENTAB3
 #define SPI_FREQUENCY  27000000
-#define TFT_MISO  PIN_D6  // Automatically assigned with ESP8266 if not defined
-#define TFT_MOSI  PIN_D7  // Automatically assigned with ESP8266 if not defined
-#define TFT_SCLK  PIN_D5  // Automatically assigned with ESP8266 if not defined
-#define TFT_CS    PIN_D8  // Chip select control pin D8
-#define TFT_DC    PIN_D3  // Data Command control pin
-#define TFT_RST   PIN_D4  // Reset pin (could connect to NodeMCU RST, see next line)
+#define TFT_SCLK  PIN_D5  // SCK (CLK)
+#define TFT_DC    PIN_D6  // Data Command control pin
+#define TFT_MOSI  PIN_D7  // SDA (MOSI)
+#define TFT_CS    -1  // Chip select control pin D8
+#define TFT_RST   -1      // RESET control pin
 #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 //#define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
 //#define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
