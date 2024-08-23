@@ -66,13 +66,13 @@ onchange="document.getElementById('u_v').value = this.value.replace(/^.*[\\\/]/,
 onclick="document.getElementById('u_h').click();"/><button onclick="document.getElementById('u_h').click();">Browse</button><button id="b_u">Upload</button><button id="p-bar"><span id="pr1">0/0</span><span id="pr2">0/0</span></button><button onclick="luf()">Update</button></div><div id='tree'style='top:1em'></div></div><div id="i">The operation was successful</div><div id="loader"><div class="m-l"></div></div></body></html>
 )=====";
 
-void startServer(){
+void startServer() {
   WiFi.forceSleepWake();
   serverSetup();
   tft.fillScreen(0x0000);
   tft.setTextSize(1);
   tft.setTextColor(0xffff);
-  tft.setCursor(0,10);
+  tft.setCursor(0, 10);
   tft.print(F("SSID "));
   tft.print(F(APSSID));
   tft.print(F("\nPassword "));
@@ -82,10 +82,10 @@ void startServer(){
   tft.print(F("\nPress button A to\nreboot"));
   Serial.print(F("FreeHeap:"));
   Serial.println(ESP.getFreeHeap());
-  while(1){
+  while (1) {
     serverLoop();
     getKey();
-    if(Serial.read() == 'r' || thiskey & 16)
+    if (Serial.read() == 'r' || thiskey & 16)
       ESP.reset();
     delay(100);
   }
@@ -112,7 +112,7 @@ void handleFileList() {
     output += ':';
     output += String(dir.fileSize());
   }
-  
+
   server.send(200, "text/json", output);
   output = String();
   Serial.print(F("Free "));
@@ -123,13 +123,14 @@ void handleFileUpload() {
   if (server.uri() != "/e") {
     return;
   }
-  HTTPUpload& upload = server.upload();
+  HTTPUpload &upload = server.upload();
   if (upload.status == UPLOAD_FILE_START) {
     String filename = upload.filename;
     if (!filename.startsWith("/")) {
       filename = "/" + filename;
     }
-    Serial.print(F("handleFileUpload Name: ")); Serial.println(filename);
+    Serial.print(F("handleFileUpload Name: "));
+    Serial.println(filename);
     fsUploadFile = LittleFS.open(filename, "w");
     filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
@@ -140,7 +141,8 @@ void handleFileUpload() {
     if (fsUploadFile) {
       fsUploadFile.close();
     }
-    Serial.print(F("handleFileUpload Size: ")); Serial.println(upload.totalSize);
+    Serial.print(F("handleFileUpload Size: "));
+    Serial.println(upload.totalSize);
   }
 }
 
@@ -153,7 +155,8 @@ void handleFileDelete() {
     return server.send_P(500, txtplain, send_bad_args);
   }
   String path = server.arg(0);
-  Serial.print(F("handleFileDelete: ")); Serial.println(path);
+  Serial.print(F("handleFileDelete: "));
+  Serial.println(path);
   if (path == "/") {
     return server.send_P(500, txtplain, send_bad_path);
   }
@@ -179,9 +182,11 @@ void serverSetup() {
   server.on("/", handleRoot);
   server.on("/l", HTTP_GET, handleFileList);
   server.on("/e", HTTP_DELETE, handleFileDelete);
-  server.on("/e", HTTP_POST, []() {
-    server.send(200, "text/plain", "");
-  }, handleFileUpload);
+  server.on(
+    "/e", HTTP_POST, []() {
+      server.send(200, "text/plain", "");
+    },
+    handleFileUpload);
   MDNS.begin(host);
   httpUpdater.setup(&server);
   server.begin();

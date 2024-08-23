@@ -3,8 +3,8 @@
 
 #define FIFO_MAX_SIZE 32
 
-int16_t reg[16] __attribute__ ((aligned));
-int16_t shadow_reg[16] __attribute__ ((aligned));
+int16_t reg[16] __attribute__((aligned));
+int16_t shadow_reg[16] __attribute__((aligned));
 uint16_t pc = 0;
 uint16_t interrupt = 0;
 uint16_t dataName = 0;
@@ -31,54 +31,54 @@ struct Fifo_t {
 
 struct Fifo_t interruptFifo;
 
-#pragma GCC optimize ("-O2")
+#pragma GCC optimize("-O2")
 #pragma GCC push_options
 
-void fifoClear(){
+void fifoClear() {
   interruptFifo.position_read = 0;
   interruptFifo.position_write = 0;
   interruptFifo.size = 0;
-  for(int16_t i = 0; i < FIFO_MAX_SIZE; i++)
+  for (int16_t i = 0; i < FIFO_MAX_SIZE; i++)
     interruptFifo.el[i] = 0;
 }
 
-void pushInFifo(int16_t n){
-  if(interruptFifo.size < FIFO_MAX_SIZE){
+void pushInFifo(int16_t n) {
+  if (interruptFifo.size < FIFO_MAX_SIZE) {
     interruptFifo.el[interruptFifo.position_write] = n;
     interruptFifo.position_write++;
-    if(interruptFifo.position_write >= FIFO_MAX_SIZE)
+    if (interruptFifo.position_write >= FIFO_MAX_SIZE)
       interruptFifo.position_write = 0;
     interruptFifo.size++;
   }
 }
 
-uint16_t popOutFifo(){
+uint16_t popOutFifo() {
   uint16_t out = 0;
-  if(interruptFifo.size > 0){
+  if (interruptFifo.size > 0) {
     interruptFifo.size--;
     out = interruptFifo.el[interruptFifo.position_read];
     interruptFifo.position_read++;
-    if(interruptFifo.position_read >= FIFO_MAX_SIZE)
+    if (interruptFifo.position_read >= FIFO_MAX_SIZE)
       interruptFifo.position_read = 0;
   }
   return out;
 }
 
-inline int16_t flagsTouint8_t(){
-  return (carry & 0x1) + ((zero & 0x1) << 1)  + ((negative & 0x1) << 2);
+inline int16_t flagsTouint8_t() {
+  return (carry & 0x1) + ((zero & 0x1) << 1) + ((negative & 0x1) << 2);
 }
-  
-inline void uint8_tToFlags(int16_t b){
+
+inline void uint8_tToFlags(int16_t b) {
   carry = b & 0x1;
   zero = (b & 0x2) >> 1;
   negative = (b & 0x4) >> 2;
 }
 
-void setinterrupt(uint16_t adr, int16_t param){
-  if(interrupt == 0 && adr != 0){
+void setinterrupt(uint16_t adr, int16_t param) {
+  if (interrupt == 0 && adr != 0) {
     saccum = accum;
     shadow_reg[0] = flagsTouint8_t();
-    for(int8_t j = 1; j <= 15; j++){
+    for (int8_t j = 1; j <= 15; j++) {
       shadow_reg[j] = reg[j];
     }
     reg[0] -= 2;
@@ -87,26 +87,25 @@ void setinterrupt(uint16_t adr, int16_t param){
     writeInt(reg[0], pc);
     interrupt = pc;
     pc = adr;
-  }
-  else{
+  } else {
     pushInFifo(adr);
     pushInFifo(param);
   }
 }
 
-void setLoadedFileName(String s){
+void setLoadedFileName(String s) {
   loadedFileName = s;
 }
 
-void cpuInit(){
-  for(uint8_t i = 1; i < 16; i++){
+void cpuInit() {
+  for (uint8_t i = 1; i < 16; i++) {
     reg[i] = 0;
   }
   strBufPosition = 0;
   interrupt = 0;
   fifoClear();
   display_init();
-  reg[0] = RAM_SIZE - 1;//stack pointer
+  reg[0] = RAM_SIZE - 1;  //stack pointer
   clearScr(0);
   color = 1;
   bgcolor = 0;
@@ -122,15 +121,15 @@ void cpuInit(){
   setRtttlPlay(0);
 }
 
-void debug(){
-  for(uint8_t i = 0; i < 16; i++){
+void debug() {
+  for (uint8_t i = 0; i < 16; i++) {
     Serial.print(" R");
     Serial.print(i);
     Serial.print(':');
     Serial.print(reg[i]);
   }
   Serial.print(F(" OP:"));
-  Serial.print(readMem(pc),HEX);
+  Serial.print(readMem(pc), HEX);
   Serial.print(F(" PC:"));
   Serial.println(pc);
   Serial.print(F("carry: "));
@@ -151,11 +150,11 @@ void debug(){
   Serial.print(' ');
 }
 
-inline void setRedraw(){
+inline void setRedraw() {
   redraw = 1;
 }
 
-inline void setFlags(int32_t n){
+inline void setFlags(int32_t n) {
   carry = (n > 0xffff) ? 1 : 0;
   negative = n >> 31;
   zero = (n == 0);
@@ -165,7 +164,7 @@ int16_t isqrt(int16_t n) {
   int g = 0x8000;
   int c = 0x8000;
   for (;;) {
-    if (g*g > n) {
+    if (g * g > n) {
       g ^= c;
     }
     c >>= 1;
@@ -176,99 +175,97 @@ int16_t isqrt(int16_t n) {
   }
 }
 
-int16_t distancepp(int16_t x1, int16_t y1, int16_t x2, int16_t y2){
+int16_t distancepp(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
   return isqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-inline void setDataName(uint16_t address){
+inline void setDataName(uint16_t address) {
   dataName = address;
 }
 
-boolean testDataName(uint16_t pos){
+boolean testDataName(uint16_t pos) {
   uint8_t c;
-  if(dataName){
-    for(uint16_t i = 0; i < 12; i++){
+  if (dataName) {
+    for (uint16_t i = 0; i < 12; i++) {
       c = EEPROM.read(pos + i);
-      if(c != readMem(dataName + i))
+      if (c != readMem(dataName + i))
         return false;
-      if(c == 0)
+      if (c == 0)
         return true;
     }
-  }
-  else{
-    for(uint16_t i = 0; i < 12; i++){
+  } else {
+    for (uint16_t i = 0; i < 12; i++) {
       c = EEPROM.read(pos + i);
-      if(c != loadedFileName[i])
+      if (c != loadedFileName[i])
         return false;
-      if(c == 0)
+      if (c == 0)
         return true;
     }
   }
   return true;
 }
 
-uint16_t findData(){
+uint16_t findData() {
   uint16_t pos;
   uint8_t c;
   pos = 0;
-  while(pos < EEPROM_SIZE){
+  while (pos < EEPROM_SIZE) {
     c = EEPROM.read(pos);
-    if(c == 0 || c == 0xff)
+    if (c == 0 || c == 0xff)
       return EEPROM_SIZE;
-    if(testDataName(pos + 1))
+    if (testDataName(pos + 1))
       return pos;
     pos += c;
   }
   return EEPROM_SIZE;
 }
 
-uint16_t findEndData(){
+uint16_t findEndData() {
   uint16_t pos;
   uint8_t c;
   pos = 0;
-  while(pos < EEPROM_SIZE){
+  while (pos < EEPROM_SIZE) {
     c = EEPROM.read(pos);
-    if(c == 0 || c == 0xff)
+    if (c == 0 || c == 0xff)
       return pos;
     pos += c;
   }
   return EEPROM_SIZE;
 }
 
-uint16_t saveData(uint16_t arrayAddress, uint16_t count){
-  uint16_t i,pos;
+uint16_t saveData(uint16_t arrayAddress, uint16_t count) {
+  uint16_t i, pos;
   uint8_t c;
-  if(count > 242)
+  if (count > 242)
     count = 242;
   pos = findData();
-  if(pos == EEPROM_SIZE)
+  if (pos == EEPROM_SIZE)
     pos = findEndData();
-  if((EEPROM_SIZE - pos) - 12 < count)
+  if ((EEPROM_SIZE - pos) - 12 < count)
     return (EEPROM_SIZE - pos) - 12;
   c = EEPROM.read(pos);
-  if(c == 0 || c == 0xff){
+  if (c == 0 || c == 0xff) {
     EEPROM.write(pos, 12 + count);
-    for(i = 0; i < 12; i++)
+    for (i = 0; i < 12; i++)
       EEPROM.write(pos + i + 1, readMem(dataName + i));
-  }
-  else if(c < count)
+  } else if (c < count)
     return c;
   pos += 12;
-  for(i = 0; i < count; i++)
+  for (i = 0; i < count; i++)
     EEPROM.write(pos + i, readMem(arrayAddress + i));
   EEPROM.commit();
   return count;
 }
 
-uint16_t loadData(uint16_t arrayAddress){
-  uint16_t i,pos;
+uint16_t loadData(uint16_t arrayAddress) {
+  uint16_t i, pos;
   uint8_t c;
   pos = findData();
-  if(pos == EEPROM_SIZE)
+  if (pos == EEPROM_SIZE)
     return 0;
   c = EEPROM.read(pos) - 12;
   pos += 12;
-  for(i = 0; i < c; i++)
+  for (i = 0; i < c; i++)
     writeMem(arrayAddress + i, EEPROM.read(pos + i));
   return c;
 }
@@ -276,24 +273,24 @@ uint16_t loadData(uint16_t arrayAddress){
 int16_t fixed_sin(int x) {
   //Bhaskara I's sine approximation sin(x°) = 4·x·(180−x)/(40500−x·(180−x))
   char pos = 1;  // positive - keeps an eye on the sign.
-  if (x < 0){
+  if (x < 0) {
     x = -x;
     pos = !pos;
   }
   if (x >= 360)
     x %= 360;
-  if (x > 180){
+  if (x > 180) {
     x -= 180;
     pos = !pos;
   }
   int16_t nv = x * (180 - x);
-  int32_t s = (nv * 4  * (1 << fixed_res_bit))/(40500 - nv);
-  if (pos) 
+  int32_t s = (nv * 4 * (1 << fixed_res_bit)) / (40500 - nv);
+  if (pos)
     return (int16_t)s;
   return (int16_t)-s;
 }
 
-inline int16_t fixed_cos(int16_t g){
+inline int16_t fixed_cos(int16_t g) {
   return fixed_sin(g + 90);
 }
 
@@ -304,94 +301,94 @@ void copyMem(uint16_t to_adr, uint16_t from_adr, uint16_t num_bytes) {
 }
 
 void unpackingRLE(uint16_t to_adr, uint16_t a, uint16_t num_bytes) {
-    uint16_t  i = 0;
-    uint16_t  repeat = readMem(a);
-    a++;
-    uint16_t  color = readMem(a);
-    while (i < num_bytes) {
-      if (repeat > 0x81) {
-        writeMem(to_adr++, color);
-        i++;
-        a++;
-        repeat--;
-        color = readMem(a);
-      } else if (repeat == 0x81) {
-        repeat = readMem(a);
-        a++;
-        color = readMem(a);
-      } else if (repeat > 0) {
-        writeMem(to_adr++, color);
-        i++;
-        repeat--;
-      } else if (repeat == 0) {
-        a++;
-        repeat = readMem(a);
-        a++;
-        color = readMem(a);
-      }
+  uint16_t i = 0;
+  uint16_t repeat = readMem(a);
+  a++;
+  uint16_t color = readMem(a);
+  while (i < num_bytes) {
+    if (repeat > 0x81) {
+      writeMem(to_adr++, color);
+      i++;
+      a++;
+      repeat--;
+      color = readMem(a);
+    } else if (repeat == 0x81) {
+      repeat = readMem(a);
+      a++;
+      color = readMem(a);
+    } else if (repeat > 0) {
+      writeMem(to_adr++, color);
+      i++;
+      repeat--;
+    } else if (repeat == 0) {
+      a++;
+      repeat = readMem(a);
+      a++;
+      color = readMem(a);
     }
   }
+}
 
 void unpackingLZ(uint16_t to_adr, uint16_t a, uint16_t num_bytes) {
-    uint16_t  i = 0;
-    uint16_t  j;
-    uint16_t  length;
-    uint16_t  position;
-    uint16_t  point;
-    while (i < num_bytes) {
-      if ((readMem(a) & 128) == 0) {
-        length = ((readMem(a++) & 127) << 8) + readMem(a++);
-        for (j = 0; j < length; j++) {
-          writeMem(to_adr++, readMem(a++));
-          i++;
-        }
-      } else {
-        length = (readMem(a) & 127) >> 1;
-        position = (((readMem(a++) & 1) << 8) + readMem(a++));
-        point = to_adr - position;
-        for (j = 0; j < length; j++) {
-          writeMem(to_adr++, readMem(point + j));
-          i++;
-        }
+  uint16_t i = 0;
+  uint16_t j;
+  uint16_t length;
+  uint16_t position;
+  uint16_t point;
+  while (i < num_bytes) {
+    if ((readMem(a) & 128) == 0) {
+      length = ((readMem(a++) & 127) << 8) + readMem(a++);
+      for (j = 0; j < length; j++) {
+        writeMem(to_adr++, readMem(a++));
+        i++;
+      }
+    } else {
+      length = (readMem(a) & 127) >> 1;
+      position = (((readMem(a++) & 1) << 8) + readMem(a++));
+      point = to_adr - position;
+      for (j = 0; j < length; j++) {
+        writeMem(to_adr++, readMem(point + j));
+        i++;
       }
     }
   }
+}
 
 
 
-void cpuRun(uint16_t n){
+void cpuRun(uint16_t n) {
   uint8_t op1, op2;
   uint16_t reg1, reg2, reg3;
   uint16_t adr;
   uint16_t j, z;
-  for(z = 0; z < n; z++){
+  for (z = 0; z < n; z++) {
     op1 = readMem(pc++);
     op2 = readMem(pc++);
-    switch(op1 >> 4){
+    switch (op1 >> 4) {
       case 0x0:
-        switch(op1){ 
-          case 0x01: 
+        switch (op1) {
+          case 0x01:
             //LDI R,int   01 0R XXXX
             reg1 = op2 & 0xf;
             accum = readInt(pc);
             reg[reg1] = (int16_t)accum;
             pc += 2;
             break;
-          case 0x02: 
+          case 0x02:
             //LDI R,(R)   02 RR
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
             accum = readInt(reg[reg2]);
             reg[reg1] = (int16_t)accum;
             break;
-          case 0x03: 
+          case 0x03:
             //LDI R,(adr) 03 0R XXXX
             reg1 = (op2 & 0xf);
             accum = readInt(readInt(pc));
             reg[reg1] = (int16_t)accum;
             pc += 2;
             break;
-          case 0x04: 
+          case 0x04:
             //LDI R,(int+R) 04 RR XXXX
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
@@ -399,24 +396,23 @@ void cpuRun(uint16_t n){
             reg[reg1] = (int16_t)accum;
             pc += 2;
             break;
-          case 0x05: 
+          case 0x05:
             //STI (R),R   05 RR
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
-            writeInt(reg[reg1],reg[reg2]);
+            writeInt(reg[reg1], reg[reg2]);
             break;
           case 0x06:
-            if((op2 & 0x0f) == 0){
+            if ((op2 & 0x0f) == 0) {
               //STI (adr),R 06 R0 XXXX
               reg1 = op2 >> 4;
-              writeInt(readInt(pc),reg[reg1]);
+              writeInt(readInt(pc), reg[reg1]);
               pc += 2;
-            }
-            else{
+            } else {
               //STI (adr+R),R 06 RR XXXX
               reg1 = op2 >> 4;
               reg2 = op2 & 0xf;
-              writeInt(readInt(pc) + reg[reg1],reg[reg2]);
+              writeInt(readInt(pc) + reg[reg1], reg[reg2]);
               pc += 2;
             }
             break;
@@ -438,7 +434,7 @@ void cpuRun(uint16_t n){
             //STIAL (adr+R*2),R   09 RR XXXX
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
-            writeInt(readInt(pc) + reg[reg1] * 2,reg[reg2]);
+            writeInt(readInt(pc) + reg[reg1] * 2, reg[reg2]);
             pc += 2;
             break;
           default:
@@ -452,14 +448,13 @@ void cpuRun(uint16_t n){
         reg[reg1] = (int16_t)accum;
         break;
       case 0x2:
-        if(op1 == 0x20){
+        if (op1 == 0x20) {
           // LDC R,(R)  20 RR
           reg1 = op2 >> 4;
           reg2 = op2 & 0xf;
           accum = readMem(reg[reg2]);
           reg[reg1] = (int16_t)accum;
-        }
-        else{
+        } else {
           // LDC R,(R+R)  2R RR
           reg1 = op1 & 0xf;
           reg2 = op2 >> 4;
@@ -468,8 +463,8 @@ void cpuRun(uint16_t n){
           reg[reg1] = (int16_t)accum;
         }
         break;
-      case 0x3: 
-        switch(op1){
+      case 0x3:
+        switch (op1) {
           case 0x30:
             // LDC R,(int+R)30 RR XXXX
             reg1 = op2 >> 4;
@@ -488,35 +483,34 @@ void cpuRun(uint16_t n){
           case 0x32:
             // STC (adr),R  32 0R XXXX
             reg1 = op2 >> 4;
-            writeMem(readInt(pc),reg[reg1]);
+            writeMem(readInt(pc), reg[reg1]);
             pc += 2;
             break;
           case 0x33:
             // STC (int+R),R33 RR XXXX
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
-            writeMem(readInt(pc) + reg[reg1],reg[reg2]);
+            writeMem(readInt(pc) + reg[reg1], reg[reg2]);
             pc += 2;
             break;
         }
         break;
       case 0x4:
-        if(op1 == 0x40){
-            // STC (R),R  40 RR
-            reg1 = op2 >> 4;
-            reg2 = op2 & 0xf;
-            writeMem(reg[reg1], reg[reg2]);
-          }
-          else{
-            // STC (R+R),R  4R RR 
-            reg1 = op1 & 0xf;
-            reg2 = op2 >> 4;
-            reg3 = op2 & 0xf;
-            writeMem(reg[reg1] + reg[reg2], reg[reg3]);
-          }
+        if (op1 == 0x40) {
+          // STC (R),R  40 RR
+          reg1 = op2 >> 4;
+          reg2 = op2 & 0xf;
+          writeMem(reg[reg1], reg[reg2]);
+        } else {
+          // STC (R+R),R  4R RR
+          reg1 = op1 & 0xf;
+          reg2 = op2 >> 4;
+          reg3 = op2 & 0xf;
+          writeMem(reg[reg1] + reg[reg2], reg[reg3]);
+        }
         break;
       case 0x5:
-        switch(op1){ 
+        switch (op1) {
           case 0x50:
             //HLT       5000
             clearSpriteScr();
@@ -539,14 +533,14 @@ void cpuRun(uint16_t n){
             // SETLED R   530R
             break;
           case 0x54:
-              // LOADRT   540R
-              reg1 = op2 >> 4;
-              reg2 = op2 & 0xf;
-              setRtttlAddress((uint16_t)reg[reg1]);
-              setRtttlLoop(reg[reg2]);
-              break;
+            // LOADRT   540R
+            reg1 = op2 >> 4;
+            reg2 = op2 & 0xf;
+            setRtttlAddress((uint16_t)reg[reg1]);
+            setRtttlLoop(reg[reg2]);
+            break;
           case 0x55:
-            switch(op2){
+            switch (op2) {
               // PLAYRT   5500
               case 0x00:
                 setRtttlPlay(1);
@@ -568,12 +562,11 @@ void cpuRun(uint16_t n){
             addTone(reg[reg1], reg[reg2]);
             break;
           case 0x57:
-            if (op2 < 0x10){
+            if (op2 < 0x10) {
               // LDATA R      57 0R
               reg2 = op2 & 0xf;
               reg[reg2] = loadData(reg[reg2]);
-            }
-            else if (op2 < 0x20){
+            } else if (op2 < 0x20) {
               // NDATA R      57 1R
               reg2 = op2 & 0xf;
               setDataName(reg[reg2]);
@@ -620,9 +613,9 @@ void cpuRun(uint16_t n){
         reg2 = op2 >> 4;
         reg3 = op2 & 0xf;
         writeInt(reg[reg1] + reg[reg2], reg[reg3]);
-        break;  
+        break;
       case 0x8:
-        switch(op1){
+        switch (op1) {
           case 0x80:
             // POP R    80 0R
             reg1 = op2 & 0xf;
@@ -632,7 +625,7 @@ void cpuRun(uint16_t n){
           case 0x81:
             // POPN R   81 0R
             reg1 = op2 & 0xf;
-            for(j = reg1; j >= 1; j--){
+            for (j = reg1; j >= 1; j--) {
               reg[j] = readInt(reg[0]);
               reg[0] += 2;
             }
@@ -646,7 +639,7 @@ void cpuRun(uint16_t n){
           case 0x83:
             // PUSHN R    83 0R
             reg1 = op2 & 0xf;
-            for(j = 1; j <= reg1; j++){
+            for (j = 1; j <= reg1; j++) {
               reg[0] -= 2;
               writeInt(reg[0], reg[j]);
             }
@@ -654,7 +647,7 @@ void cpuRun(uint16_t n){
         }
         break;
       case 0x9:
-        switch(op1){
+        switch (op1) {
           case 0x90:
             // JMP adr    90 00 XXXX
             pc = readInt(pc);
@@ -662,67 +655,67 @@ void cpuRun(uint16_t n){
           case 0x91:
             // JNZ adr    91 00 XXXX
             setFlags(accum);
-            if(zero == 0)
+            if (zero == 0)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x92:
             // JZ adr   92 00 XXXX
             setFlags(accum);
-            if(zero != 0)
+            if (zero != 0)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x93:
             // JNP adr    93 00 XXXX
             setFlags(accum);
-            if(negative == 1)
+            if (negative == 1)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x94:
             // JP adr   94 00 XXXX
             setFlags(accum);
-            if(negative != 1)
+            if (negative != 1)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x95:
             // JNC adr    95 00 XXXX
             setFlags(accum);
-            if(carry != 1)
+            if (carry != 1)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x96:
             // JC adr   96 00 XXXX
             setFlags(accum);
-            if(carry == 1)
+            if (carry == 1)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x97:
             // JZR R,adr  97 0R XXXX
             setFlags(accum);
             reg1 = op2 & 0xf;
-            if(reg[reg1] == 0)
+            if (reg[reg1] == 0)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x98:
             // JNZR R,adr 98 0R XXXX
             setFlags(accum);
             reg1 = op2 & 0xf;
-            if(reg[reg1] != 0)
+            if (reg[reg1] != 0)
               pc = readInt(pc);
-            else 
+            else
               pc += 2;
             break;
           case 0x99:
@@ -733,31 +726,29 @@ void cpuRun(uint16_t n){
             break;
           case 0x9A:
             // RET      9A 00
-            if(!interrupt){
+            if (!interrupt) {
               pc = readInt(reg[0]);
               reg[0] += 2;
-            }
-            else{
+            } else {
               pc = readInt(reg[0]);
-              if(pc == interrupt){
+              if (pc == interrupt) {
                 reg[0] += 4;
                 accum = saccum;
-                for(int8_t j = 15; j >= 1; j--){
+                for (int8_t j = 15; j >= 1; j--) {
                   reg[j] = shadow_reg[j];
                 }
                 uint8_tToFlags(shadow_reg[0]);
                 interrupt = 0;
-                if(interruptFifo.size > 0)
+                if (interruptFifo.size > 0)
                   setinterrupt(popOutFifo(), popOutFifo());
-              }
-              else
+              } else
                 reg[0] += 2;
             }
             break;
         }
         break;
       case 0xA:
-        switch(op1){
+        switch (op1) {
           case 0xA0:
             // ADD R,R    A0 RR
             reg1 = op2 >> 4;
@@ -797,12 +788,11 @@ void cpuRun(uint16_t n){
             // DIV R,R    A5 RR
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
-            if(reg[reg2] != 0){
+            if (reg[reg2] != 0) {
               accum = reg[reg1] / reg[reg2];
               reg[reg2] = reg[reg1] % reg[reg2];
-            }
-            else{
-              accum = 0;//error
+            } else {
+              accum = 0;  //error
               reg[reg2] = 0;
             }
             reg[reg1] = (int16_t)accum;
@@ -822,41 +812,37 @@ void cpuRun(uint16_t n){
             reg[reg1] = (int16_t)accum;
             break;
           case 0xA8:
-            if(op2 == 0x10){
+            if (op2 == 0x10) {
               // INC adr    A8 10 XXXX
               reg1 = op2 & 0xf;
               accum = readInt(readInt(pc)) + 1;
               writeInt(readInt(pc), (int16_t)accum);
               pc += 2;
-            }
-            else if(op2 > 0x10){
+            } else if (op2 > 0x10) {
               // INC R,n    A8 nR
               reg1 = op2 & 0xf;
               accum = reg[reg1] + (op2 >> 4);
               reg[reg1] = (int16_t)accum;
-            }
-            else{
-              // INC R    A8 0R       
+            } else {
+              // INC R    A8 0R
               reg1 = op2 & 0xf;
               accum = reg[reg1] + 1;
               reg[reg1] = (int16_t)accum;
             }
             break;
           case 0xA9:
-            if(op2 == 0x10){
+            if (op2 == 0x10) {
               // DEC adr    A9 10 XXXX
               reg1 = op2 & 0xf;
               accum = readInt(readInt(pc)) - 1;
               writeInt(readInt(pc), (int16_t)accum);
               pc += 2;
-            }
-            else if(op2 > 0x10){
+            } else if (op2 > 0x10) {
               // DEC R,n    A9 nR
               reg1 = op2 & 0xf;
               accum = reg[reg1] - (op2 >> 4);
               reg[reg1] = (int16_t)accum;
-            }
-            else{
+            } else {
               // DEC R    A9 0R
               reg1 = op2 & 0xf;
               accum = reg[reg1] - 1;
@@ -887,22 +873,22 @@ void cpuRun(uint16_t n){
           case 0xAD:
             reg1 = op2 & 0xf;
             reg2 = op2 & 0xf0;
-            switch(reg2){
+            switch (reg2) {
               // RAND R   AD 0R
               case 0x00:
                 accum = random(0, reg[reg1] + 1);
                 reg[reg1] = (int16_t)accum;
-              break;
+                break;
               // SQRT R    AD 1R
               case 0x10:
                 accum = isqrt(reg[reg1]);
                 reg[reg1] = (int16_t)accum;
-              break;
+                break;
               // NOT R    AD 2R
               case 0x20:
                 accum = (~reg[reg1]);
                 reg[reg1] = (int16_t)accum;
-              break;
+                break;
             }
             break;
           case 0xAE:
@@ -927,7 +913,7 @@ void cpuRun(uint16_t n){
         accum = reg[reg1] - op2;
         break;
       case 0xC:
-        switch(op1){
+        switch (op1) {
           case 0xC0:
             //CMP R,INT   C0 R0 XXXX
             reg1 = op2 >> 4;
@@ -945,7 +931,7 @@ void cpuRun(uint16_t n){
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
             setFlags(accum);
-            switch(reg2){
+            switch (reg2) {
               case 0:
                 reg[reg1] = carry;
                 break;
@@ -955,14 +941,14 @@ void cpuRun(uint16_t n){
               case 2:
                 reg[reg1] = negative;
                 break;
-              case 3: //pozitive
-                if(negative == 0 && zero == 0)
+              case 3:  //pozitive
+                if (negative == 0 && zero == 0)
                   reg[reg1] = 1;
                 else
                   reg[reg1] = 0;
                 break;
-              case 4: //not pozitive
-                if(negative == 0 && zero == 0)
+              case 4:  //not pozitive
+                if (negative == 0 && zero == 0)
                   reg[reg1] = 0;
                 else
                   reg[reg1] = 1;
@@ -971,8 +957,8 @@ void cpuRun(uint16_t n){
                 reg[reg1] = 1 - zero;
                 break;
               case 6:
-                  reg[reg1] = redraw;
-                  redraw = 0;
+                reg[reg1] = redraw;
+                redraw = 0;
                 break;
               default:
                 reg[reg1] = 0;
@@ -981,7 +967,7 @@ void cpuRun(uint16_t n){
           case 0xc3:
             reg1 = op2 & 0x0f;
             reg2 = op2 & 0xf0;
-            switch(reg2){
+            switch (reg2) {
               // ITOF R   C3 0R
               case 0x00:
                 reg[reg1] = reg[reg1] * (1 << fixed_res_bit);
@@ -1008,7 +994,7 @@ void cpuRun(uint16_t n){
                 adr = reg[reg1];
                 unpackingRLE(readInt(adr + 4), readInt(adr + 2), readInt(adr));
                 break;
-               // UNPKLZ R C3 6R
+                // UNPKLZ R C3 6R
               case 0x60:
                 adr = reg[reg1];
                 unpackingLZ(readInt(adr + 4), readInt(adr + 2), readInt(adr));
@@ -1024,24 +1010,24 @@ void cpuRun(uint16_t n){
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
             accum = (reg[reg1] * reg[reg2]) / (1 << fixed_res_bit);
-            reg[reg1] = (uint16_t) accum;
+            reg[reg1] = (uint16_t)accum;
             break;
           case 0xC5:
             // DIVF R,R   C5 RR
             reg1 = op2 >> 4;
             reg2 = op2 & 0xf;
             accum = (reg[reg1] * (1 << fixed_res_bit)) / reg[reg2];
-            reg[reg1] = (uint16_t) accum;
+            reg[reg1] = (uint16_t)accum;
             break;
         }
         break;
       case 0xD:
-        switch(op1){ 
+        switch (op1) {
           case 0xD0:
             //CLS   D000
-            if((op2 & 0xff) == 0)
+            if ((op2 & 0xff) == 0)
               clearScr(bgcolor);
-            else{
+            else {
               //GSPRXY R,R
               reg1 = op2 >> 4;
               reg2 = op2 & 0xf;
@@ -1049,7 +1035,7 @@ void cpuRun(uint16_t n){
             }
             break;
           case 0xD1:
-            switch(op2 & 0xf0){
+            switch (op2 & 0xf0) {
               case 0x00:
                 //PUTC R  D10R
                 reg1 = (op2 & 0xf);
@@ -1059,7 +1045,7 @@ void cpuRun(uint16_t n){
                 //PUTS R  D11R
                 reg1 = (op2 & 0xf);
                 j = 0;
-                while(!(readMem(reg[reg1] + j) == 0 || j > 1000)){
+                while (!(readMem(reg[reg1] + j) == 0 || j > 1000)) {
                   printc((char)(readMem(reg[reg1] + j)), color, bgcolor);
                   j++;
                 }
@@ -1067,12 +1053,12 @@ void cpuRun(uint16_t n){
               case 0x20:
                 //PUTN R D12R
                 reg1 = (op2 & 0xf);
-                if(reg[reg1] < 32768)
+                if (reg[reg1] < 32768)
                   itoa(reg[reg1], s_buffer, 10);
                 else
                   itoa(reg[reg1] - 0x10000, s_buffer, 10);
                 j = 0;
-                while(s_buffer[j]){
+                while (s_buffer[j]) {
                   printc(s_buffer[j], color, bgcolor);
                   j++;
                 }
@@ -1131,58 +1117,56 @@ void cpuRun(uint16_t n){
               case 0xC0:
                 // DRWCHAR R  D1 CR
                 reg1 = (op2 & 0xf);
-                adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно y, x, char
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно y, x, char
                 drawChar(readInt(adr + 4), readInt(adr + 2), readInt(adr));
                 break;
               case 0xD0:
                 // DRWSTR R D1 DR
                 reg1 = (op2 & 0xf);
-                adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно y, x, string
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно y, x, string
                 drawString(readInt(adr + 4), readInt(adr + 2), readInt(adr));
                 break;
               case 0xE0:
                 // FONTLOAD R D1 ER
                 reg1 = (op2 & 0xf);
-                adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно end, start, adr
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно end, start, adr
                 fontload(readInt(adr + 4), readInt(adr + 2), readInt(adr));
                 break;
               case 0xF0:
                 // FONTSIZE R D1 FR
                 reg1 = (op2 & 0xf);
-                adr = reg[reg1]; //регистр указывает на участок памяти, в котором расположены последовательно fontheight, fontwidth, imgheight, imgwidth
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно fontheight, fontwidth, imgheight, imgwidth
                 fontsize(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
                 break;
             }
             break;
-          case 0xD2: 
-            switch(op2 & 0xf0){
+          case 0xD2:
+            switch (op2 & 0xf0) {
               case 0x00:
                 // GETK R     D20R
                 reg1 = (op2 & 0xf);
-                if(strBufLength == 0){
+                if (strBufLength == 0) {
                   // if(getCharY() > 8)
                   //   strBufLength = virtualKeyboard(2, 2, strBuf, 16);
                   // else
                   //   strBufLength = virtualKeyboard(2, 78, strBuf, 16);
-                  if(strBufLength == 0){
+                  if (strBufLength == 0) {
                     strBuf[0] = '\n';
                     strBufLength = 1;
                   }
                   setRedrawRect(0, 128);
                   strBufPosition = 0;
                 }
-                if(strBufLength > 0){
-                  if(strBufPosition < strBufLength){
+                if (strBufLength > 0) {
+                  if (strBufPosition < strBufLength) {
                     reg[reg1] = strBuf[strBufPosition];
-                  }
-                  else{
+                  } else {
                     strBufPosition = 0;
                     strBufLength = 0;
                     pc -= 2;
                   }
                   strBufPosition++;
-                }
-                else
+                } else
                   pc -= 2;
                 thiskey = 0;
                 break;
@@ -1200,162 +1184,162 @@ void cpuRun(uint16_t n){
             setPix(reg[reg1], reg[reg2], color);
             break;
           case 0xD4:
-            switch(op2 & 0xf0){
-                case 0x00:
-                  // DRWIM R      D40R
-                  reg1 = op2 & 0xf;
-                  adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
-                  drawImg(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0x10:
-                  // SFCLR R      D41R
-                  reg1 = op2 & 0xf;
-                  color = reg[reg1] & 0xf;
-                  break;
-                case 0x20:
-                  // SBCLR R      D42R
-                  reg1 = op2 & 0xf;
-                  bgcolor = reg[reg1] & 0xf;
-                  break;
-                case 0x30:
-                  // GFCLR R      D43R
-                  reg1 = op2 & 0xf;
-                  reg[reg1] = color;
-                  break;
-                case 0x40:
-                  // GBCLR R      D44R
-                  reg1 = op2 & 0xf;
-                  reg[reg1] = bgcolor;
-                  break;
-                case 0x50:
-                 // ISIZE      D45R
-                  reg1 = op2 & 0xf;
-                  setImageSize(reg[reg1]);
-                  break;
-                case 0x60:
-                  // DLINE      D46R
-                  reg1 = op2 & 0xf;
-                  adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y, x
-                  drwLine(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0x070:
-                  // DRWRLE R   D47R
-                  reg1 = op2 & 0xf;
-                  adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
-                  drawImgRLE(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0x80:
-                  // LDTILE R   D4 8R
-                  reg1 = op2 & 0xf;
-                  adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно height, width, iheight, iwidth, adr
-                  loadTile(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0x90:
-                  // SPRSDS R D4 9R
-                  reg1 = op2 & 0xf;
-                  adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно direction, speed, n
-                  spriteSetDirectionAndSpeed(readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0xA0:
-                  // DRW1BIT R D4AR
-                  reg1 = op2 & 0xf;
-                  adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
-                  drawImageBit(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0xB0:
-                  // SETCLIP R D4BR
-                  reg1 = op2 & 0xf;
-                  adr = reg[reg1];//регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y0, x0
-                  setClip(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0xC0:
-                  // SETFPS R   D4 CR
-                  reg1 = op2 & 0xf;
-                  if(reg[reg1] >= 1 && reg[reg1] <= 40)
-                    timeForRedraw = 1000 / reg[reg1];
-                  break;
-                case 0xD0:
-                  // SETCTILE R D4 DR
-                  reg1 = op2 & 0xf;
-                  setTileCollisionMap(reg[reg1]);
-                  break;
-              }
-              break;
+            switch (op2 & 0xf0) {
+              case 0x00:
+                // DRWIM R      D40R
+                reg1 = op2 & 0xf;
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+                drawImg(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0x10:
+                // SFCLR R      D41R
+                reg1 = op2 & 0xf;
+                color = reg[reg1] & 0xf;
+                break;
+              case 0x20:
+                // SBCLR R      D42R
+                reg1 = op2 & 0xf;
+                bgcolor = reg[reg1] & 0xf;
+                break;
+              case 0x30:
+                // GFCLR R      D43R
+                reg1 = op2 & 0xf;
+                reg[reg1] = color;
+                break;
+              case 0x40:
+                // GBCLR R      D44R
+                reg1 = op2 & 0xf;
+                reg[reg1] = bgcolor;
+                break;
+              case 0x50:
+                // ISIZE      D45R
+                reg1 = op2 & 0xf;
+                setImageSize(reg[reg1]);
+                break;
+              case 0x60:
+                // DLINE      D46R
+                reg1 = op2 & 0xf;
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y, x
+                drwLine(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0x070:
+                // DRWRLE R   D47R
+                reg1 = op2 & 0xf;
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+                drawImgRLE(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0x80:
+                // LDTILE R   D4 8R
+                reg1 = op2 & 0xf;
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно height, width, iheight, iwidth, adr
+                loadTile(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0x90:
+                // SPRSDS R D4 9R
+                reg1 = op2 & 0xf;
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно direction, speed, n
+                spriteSetDirectionAndSpeed(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0xA0:
+                // DRW1BIT R D4AR
+                reg1 = op2 & 0xf;
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно h, w, y, x, адрес
+                drawImageBit(readInt(adr + 8), readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0xB0:
+                // SETCLIP R D4BR
+                reg1 = op2 & 0xf;
+                adr = reg[reg1];  //регистр указывает на участок памяти, в котором расположены последовательно y1, x1, y0, x0
+                setClip(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0xC0:
+                // SETFPS R   D4 CR
+                reg1 = op2 & 0xf;
+                if (reg[reg1] >= 1 && reg[reg1] <= 40)
+                  timeForRedraw = 1000 / reg[reg1];
+                break;
+              case 0xD0:
+                // SETCTILE R D4 DR
+                reg1 = op2 & 0xf;
+                setTileCollisionMap(reg[reg1]);
+                break;
+            }
+            break;
           case 0xD5:
             // LDSPRT R,R   D5RR
-            reg1 = op2 >> 4;//номер спрайта
-            reg2 = op2 & 0x0f;//адрес спрайта
+            reg1 = op2 >> 4;    //номер спрайта
+            reg2 = op2 & 0x0f;  //адрес спрайта
             setSpr((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2]);
             break;
           case 0xD6:
             // SPALET R,R   D6 RR
-            reg1 = op2 >> 4;//номер палитры
-            reg2 = op2 & 0xf;//цвет
+            reg1 = op2 >> 4;   //номер палитры
+            reg2 = op2 & 0xf;  //цвет
             changePalette(reg[reg1], reg[reg2]);
             break;
           case 0xD7:
-              reg1 = op2 & 0xf;
-              adr = reg[reg1];
-              switch(op2 & 0xf0){
-                case 0x0:
-                  // SPART R     D7 0R
-                  //регистр указывает на участок памяти, в котором расположены последовательно count, time, gravity
-                  setParticle(readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0x10:
-                  //регистр указывает на участок памяти, в котором расположены последовательно speed, direction2, direction1, time
-                  setEmitter(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0x20:
-                  //регистр указывает на участок памяти, в котором расположены последовательно color, y, x
-                  drawParticle(readInt(adr + 4), readInt(adr + 2), readInt(adr) & 0xf);
-                  break;
-                case 0x50:
-                  //регистр указывает на участок памяти, в котором расположены последовательно y2,x2,y1,x1
-                  reg[1] = distancepp(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-                case 0x60:
-                  //регистр указывает на участок памяти, в котором расположены последовательно size,height,width
-                  setEmitterSize(readInt(adr + 4), readInt(adr + 2), readInt(adr));
-                  break;
-              }
-              break;
+            reg1 = op2 & 0xf;
+            adr = reg[reg1];
+            switch (op2 & 0xf0) {
+              case 0x0:
+                // SPART R     D7 0R
+                //регистр указывает на участок памяти, в котором расположены последовательно count, time, gravity
+                setParticle(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0x10:
+                //регистр указывает на участок памяти, в котором расположены последовательно speed, direction2, direction1, time
+                setEmitter(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0x20:
+                //регистр указывает на участок памяти, в котором расположены последовательно color, y, x
+                drawParticle(readInt(adr + 4), readInt(adr + 2), readInt(adr) & 0xf);
+                break;
+              case 0x50:
+                //регистр указывает на участок памяти, в котором расположены последовательно y2,x2,y1,x1
+                reg[1] = distancepp(readInt(adr + 6), readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+              case 0x60:
+                //регистр указывает на участок памяти, в котором расположены последовательно size,height,width
+                setEmitterSize(readInt(adr + 4), readInt(adr + 2), readInt(adr));
+                break;
+            }
+            break;
           case 0xD8:
             // SCROLL R,R   D8RR
-            reg1 = op2 >> 4;//шаг
-            reg2 = op2 & 0xf;//направление
+            reg1 = op2 >> 4;   //шаг
+            reg2 = op2 & 0xf;  //направление
             scrollScreen(1, reg[reg2]);
             break;
           case 0xD9:
             // GETPIX R,R   D9RR
-            reg1 = op2 >> 4;//x
-            reg2 = op2 & 0xf;//y
+            reg1 = op2 >> 4;   //x
+            reg2 = op2 & 0xf;  //y
             reg[reg1] = getPix(reg[reg1], reg[reg2]);
             break;
           case 0xDA:
             // DRTILE R   DA RR
-            reg1 = op2 >> 4;//x
-            reg2 = op2 & 0xf;//y
+            reg1 = op2 >> 4;   //x
+            reg2 = op2 & 0xf;  //y
             drawTile(reg[reg1], reg[reg2]);
             break;
           case 0xDB:
             // SPRSIZE R,R  DB RR
-            reg1 = (op2 & 0xf0) >> 4; //n
-            reg2 = op2 & 0xf; //s
+            reg1 = (op2 & 0xf0) >> 4;  //n
+            reg2 = op2 & 0xf;          //s
             setSprSize((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2]);
             break;
           case 0xDC:
             // SPRGTX R,X   DC RX
-            reg1 = op2 >> 4;//num
-            reg2 = op2 & 0xf;//value
+            reg1 = op2 >> 4;   //num
+            reg2 = op2 & 0xf;  //value
             reg[reg1] = getSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2]);
             break;
           case 0xDD:
             break;
           case 0xDE:
             // AGBSPR R,R     DE RR
-            reg1 = op2 >> 4;//n1
-            reg2 = op2 & 0xf;//n2
+            reg1 = op2 >> 4;   //n1
+            reg2 = op2 & 0xf;  //n2
             reg[reg1] = angleBetweenSprites(reg[reg1], reg[reg2]);
             break;
           case 0xDF:
@@ -1368,19 +1352,19 @@ void cpuRun(uint16_t n){
         break;
       case 0xE:
         // DRSPRT R,R,R ERRR
-        reg1 = (op1 & 0xf);//номер спрайта
-        reg2 = op2 >> 4;//x
-        reg3 = op2 & 0xf;//y
+        reg1 = (op1 & 0xf);  //номер спрайта
+        reg2 = op2 >> 4;     //x
+        reg3 = op2 & 0xf;    //y
         setSprPosition((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2], reg[reg3]);
-        if(getSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, 7) < 1)
+        if (getSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, 7) < 1)
           setSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, 7, 1);
         break;
       case 0xF:
         // SSPRTV R,R,R FR RR
-        reg1 = (op1 & 0xf);//номер спрайта
-        reg2 = op2 >> 4;//type
-        reg3 = op2 & 0xf;//value
-        setSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2], reg[reg3]); 
+        reg1 = (op1 & 0xf);  //номер спрайта
+        reg2 = op2 >> 4;     //type
+        reg3 = op2 & 0xf;    //value
+        setSpriteValue((reg[reg1] < SPRITE_COUNT) ? reg[reg1] : 0, reg[reg2], reg[reg3]);
         break;
     }
   }
