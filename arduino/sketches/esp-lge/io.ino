@@ -51,5 +51,5 @@ void getKey() {
   if (digitalRead(PIN_D1) == LOW)
     thiskey |= BTN_DOWN;
   if (digitalRead(PIN_D2) == LOW)
-    thiskey |= BTN_SELECT;
+    thiskey |= BTN_START;
 }

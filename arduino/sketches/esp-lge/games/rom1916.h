@@ -1,4 +1,4 @@
-﻿
+
 #define ROM_NAME "   1916"
 
 const uint8_t romImage[] PROGMEM = {

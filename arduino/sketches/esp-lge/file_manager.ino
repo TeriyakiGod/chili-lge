@@ -1,4 +1,4 @@
-#include "../../../games/romFisherMan.h"
+#include "games/romFlatRace.h"
 
 const uint8_t saveIco[] PROGMEM = {
   0x66, 0x66, 0x66, 0x66, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf6, 0x00, 0x00, 0x00, 0x00,
@@ -297,7 +297,7 @@ uint8_t getSaveLength() {
   return n;
 }
 
-void deliteSave(uint8_t num, uint16_t end) {
+void deleteSave(uint8_t num, uint16_t end) {
   uint16_t i, pos = 0;
   uint8_t n = 0;
   uint8_t c;
@@ -349,7 +349,7 @@ void saveManager() {
       }
     } else if (thiskey & 16) {  //ok
       if (drawDialog()) {
-        deliteSave(pos, findEndData());
+        deleteSave(pos, findEndData());
       }
       drawMenuBackground();
       drawSave(pos, pos);
