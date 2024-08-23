@@ -249,7 +249,9 @@ void setup() {
   Serial.print(F(" build "));
   Serial.print(F(__DATE__));
   randomSeed(RANDOM_REG32);
-  
+  //init keyboard
+  keyboardInit();
+
   tft.init();            // initialize LCD
   tft.setRotation(SCREEN_ROTATION);
   tft.fillScreen(0x0000);

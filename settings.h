@@ -5,7 +5,7 @@
 #define BUILD_VERSION "esp-lge v1.2.0"
 #define APSSID "JALAPENO"
 #define APHOST "jalapeno"
-#define SOUNDPIN            5 // PIN D1
+#define SOUNDPIN            10 // PIN S3 TODO: DEFINE ALL PINS AS MACROS example: #define D8 15
 #define DEBUG_ON_SCREEN
 #define SCREEN_REAL_WIDTH   128
 #define SCREEN_REAL_HEIGHT  128
