@@ -8,6 +8,27 @@
 #include <file_manager.h>
 #include <sound.h>
 
+int16_t reg[16] __attribute__ ((aligned));
+int16_t shadow_reg[16] __attribute__ ((aligned));
+uint16_t pc = 0;
+uint16_t interrupt = 0;
+uint16_t dataName = 0;
+uint32_t accum, saccum;
+uint8_t carry = 0;
+uint8_t zero = 0;
+uint8_t negative = 0;
+uint8_t redraw = 0;
+int8_t color = 1;
+int8_t bgcolor = 0;
+int8_t keyPosition;
+char s_buffer[7];
+String loadedFileName;
+char strBuf[16];
+uint8_t strBufLength = 0;
+uint8_t strBufPosition = 0;
+
+struct Fifo_t interruptFifo;
+
 #pragma GCC optimize("-O2")
 #pragma GCC push_options
 

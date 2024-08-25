@@ -101,29 +101,29 @@ struct CustomFont
     int8_t columns;
 };
 
-uint8_t *screen __attribute__ ((aligned));
-uint8_t *sprite_screen __attribute__ ((aligned));
-uint32_t line_is_draw[4] __attribute__ ((aligned));
-char charArray[340] __attribute__ ((aligned));
-uint16_t pix_buffer[SCREEN_REAL_WIDTH] __attribute__ ((aligned));
-uint16_t rscreenWidth;
-uint16_t rscreenHeight;
-uint16_t displayXOffset = 32;
-struct Sprite sprite_table[SPRITE_COUNT] __attribute__ ((aligned));
-struct Particle particles[PARTICLE_COUNT] __attribute__ ((aligned));
-struct Emitter emitter;
-struct Tile tile;
-struct CustomFont custom_font;
-int16_t imageSize = 1;
-int8_t regx = 0;
-int8_t regy = 0;
-int8_t isDrawKeyboard = 0;
-int8_t keyboardPos = 0;
-uint8_t clipx0 = 0;
-uint8_t clipx1 = 128;
-uint8_t clipy0 = 0;
-uint8_t clipy1 = 128;
-uint8_t isClip = 0;
+extern uint8_t *screen __attribute__((aligned));
+extern uint8_t *sprite_screen __attribute__((aligned));
+extern uint32_t line_is_draw[4] __attribute__((aligned));
+extern char charArray[340] __attribute__((aligned));
+extern uint16_t pix_buffer[SCREEN_REAL_WIDTH] __attribute__((aligned));
+extern uint16_t rscreenWidth;
+extern uint16_t rscreenHeight;
+extern uint16_t displayXOffset;
+extern struct Sprite sprite_table[SPRITE_COUNT] __attribute__((aligned));
+extern struct Particle particles[PARTICLE_COUNT] __attribute__((aligned));
+extern struct Emitter emitter;
+extern struct Tile tile;
+extern struct CustomFont custom_font;
+extern int16_t imageSize;
+extern int8_t regx;
+extern int8_t regy;
+extern int8_t isDrawKeyboard;
+extern int8_t keyboardPos;
+extern uint8_t clipx0;
+extern uint8_t clipx1;
+extern uint8_t clipy0;
+extern uint8_t clipy1;
+extern uint8_t isClip;
 
 #define SPRITE_IS_SOLID(a) (sprite_table[a].flags & 1)
 #define SPRITE_IS_SCROLLED(a) (sprite_table[a].flags & 2)

@@ -1,6 +1,30 @@
 // TODO: Remove virtual keyboard stuff
 #include <display.h>
 
+uint8_t *screen __attribute__ ((aligned));
+uint8_t *sprite_screen __attribute__ ((aligned));
+uint32_t line_is_draw[4] __attribute__ ((aligned));
+char charArray[340] __attribute__ ((aligned));
+uint16_t pix_buffer[SCREEN_REAL_WIDTH] __attribute__ ((aligned));
+uint16_t rscreenWidth;
+uint16_t rscreenHeight;
+uint16_t displayXOffset = 32;
+struct Sprite sprite_table[SPRITE_COUNT] __attribute__ ((aligned));
+struct Particle particles[PARTICLE_COUNT] __attribute__ ((aligned));
+struct Emitter emitter;
+struct Tile tile;
+struct CustomFont custom_font;
+int16_t imageSize = 1;
+int8_t regx = 0;
+int8_t regy = 0;
+int8_t isDrawKeyboard = 0;
+int8_t keyboardPos = 0;
+uint8_t clipx0 = 0;
+uint8_t clipx1 = 128;
+uint8_t clipy0 = 0;
+uint8_t clipy1 = 128;
+uint8_t isClip = 0;
+
 #pragma GCC optimize("-O2")
 #pragma GCC push_options
 

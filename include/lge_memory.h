@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "settings.h"
 
-uint8_t *lge_mem __attribute__ ((aligned));
+extern uint8_t *lge_mem __attribute__ ((aligned));
 
 void memoryAlloc();
 void memoryFree();

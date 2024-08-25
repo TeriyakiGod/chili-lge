@@ -8,13 +8,13 @@
 #include <LittleFS.h>
 #include "settings.h"
 
-const char *ssid = APSSID;
-const char *password = APPSK;
-const char *host = APHOST;
+extern const char *ssid;
+extern const char *password;
+extern const char *host;
 
-ESP8266WebServer server(80);
-ESP8266HTTPUpdateServer httpUpdater;
-File fsUploadFile;
+extern ESP8266WebServer server;
+extern ESP8266HTTPUpdateServer httpUpdater;
+extern File fsUploadFile;
 
 void startServer();
 void handleFileList();

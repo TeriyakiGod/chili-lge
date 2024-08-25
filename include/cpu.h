@@ -7,24 +7,24 @@
 
 #define FIFO_MAX_SIZE 32
 
-int16_t reg[16] __attribute__ ((aligned));
-int16_t shadow_reg[16] __attribute__ ((aligned));
-uint16_t pc = 0;
-uint16_t interrupt = 0;
-uint16_t dataName = 0;
-uint32_t accum, saccum;
-uint8_t carry = 0;
-uint8_t zero = 0;
-uint8_t negative = 0;
-uint8_t redraw = 0;
-int8_t color = 1;
-int8_t bgcolor = 0;
-int8_t keyPosition;
-char s_buffer[7];
-String loadedFileName;
-char strBuf[16];
-uint8_t strBufLength = 0;
-uint8_t strBufPosition = 0;
+extern int16_t reg[16] __attribute__ ((aligned));
+extern int16_t shadow_reg[16] __attribute__ ((aligned));
+extern uint16_t pc;
+extern uint16_t interrupt;
+extern uint16_t dataName;
+extern uint32_t accum, saccum;
+extern uint8_t carry;
+extern uint8_t zero;
+extern uint8_t negative;
+extern uint8_t redraw;
+extern int8_t color;
+extern int8_t bgcolor;
+extern int8_t keyPosition;
+extern char s_buffer[7];
+extern String loadedFileName;
+extern char strBuf[16];
+extern uint8_t strBufLength;
+extern uint8_t strBufPosition;
 
 // FIFO Structure
 struct Fifo_t {
@@ -35,7 +35,7 @@ struct Fifo_t {
 };
 
 // FIFO Instances
-struct Fifo_t interruptFifo;
+extern struct Fifo_t interruptFifo;
 
 // Function Declarations
 void fifoClear();
