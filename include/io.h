@@ -4,14 +4,6 @@
 #include <Arduino.h>  // For Arduino functions and types
 #include "settings.h"
 
-// IO functions for Arduino
-
-// Serial communication functions
-int16_t serialBegin();
-int16_t serialAvailable();
-int16_t serialRead();
-int16_t serialWrite(int16_t n);
-
 // Pin definitions for NODEMCU v3
 // #define PIN_D0 16  // Commented out pin, you can uncomment if needed
 #define PIN_D1 5
@@ -27,6 +19,12 @@ int16_t serialWrite(int16_t n);
 #define BTN_A 32
 #define BTN_B 64
 #define BTN_START 128
+
+// Serial communication functions
+int16_t serialBegin();
+int16_t serialAvailable();
+int16_t serialRead();
+int16_t serialWrite(int16_t n);
 
 // Function to initialize keyboard pins
 void keyboardInit();

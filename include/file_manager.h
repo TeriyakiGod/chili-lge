@@ -4,26 +4,15 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 #include "settings.h"
+#include <progmem/icons.h>
 
-// Icon bitmaps stored in program memory
-extern const uint8_t saveIco[] PROGMEM;
-extern const uint8_t uploadIco[] PROGMEM;
-extern const uint8_t otaIco[] PROGMEM;
+struct {
+  int16_t saveMenuPos;
+  int16_t saveStartMenuPos;
+  uint32_t crc32;
+} rtcData;
 
-// Structure to hold RTC data
-struct RTCData {
-    int16_t saveMenuPos;
-    int16_t saveStartMenuPos;
-    uint32_t crc32;
-};
-
-// Global variable to store RTC data
-extern RTCData rtcData;
-
-// Function to calculate CRC32 for data stored in RTC
 uint32_t calculateCRC32inRTC(const uint8_t *data);
-
-// Functions to manage and display file-related operations
 uint8_t drawDialog();
 void drawMenuBackground();
 void drawSave(uint8_t startPos, uint8_t selectPos);

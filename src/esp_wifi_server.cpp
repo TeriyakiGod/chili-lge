@@ -1,14 +1,6 @@
-#include "server.h"
-#include "io.h"
-#include "esp_lge.h"
-
-const char *ssid = APSSID;
-const char *password = APPSK;
-const char *host = APHOST;
-
-ESP8266WebServer server(80);
-ESP8266HTTPUpdateServer httpUpdater;
-File fsUploadFile;
+#include <esp_wifi_server.h>
+#include <io.h>
+#include <esp_lge.h>
 
 const char index_html[] PROGMEM = R"=====(
 <!DOCTYPE html><html lang="en"><head><meta name="viewport"content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>SD Editor</title><style type="text/css"media="screen">#i
@@ -63,7 +55,8 @@ onchange="document.getElementById('u_v').value = this.value.replace(/^.*[\\\/]/,
 onclick="document.getElementById('u_h').click();"/><button onclick="document.getElementById('u_h').click();">Browse</button><button id="b_u">Upload</button><button id="p-bar"><span id="pr1">0/0</span><span id="pr2">0/0</span></button><button onclick="luf()">Update</button></div><div id='tree'style='top:1em'></div></div><div id="i">The operation was successful</div><div id="loader"><div class="m-l"></div></div></body></html>
 )=====";
 
-void startServer() {
+void startServer()
+{
   WiFi.forceSleepWake();
   serverSetup();
   tft.fillScreen(0x0000);
@@ -79,7 +72,8 @@ void startServer() {
   tft.print(F("\nPress button A to\nreboot"));
   Serial.print(F("FreeHeap:"));
   Serial.println(ESP.getFreeHeap());
-  while (1) {
+  while (1)
+  {
     serverLoop();
     getKey();
     if (Serial.read() == 'r' || thiskey & 16)
@@ -88,7 +82,8 @@ void startServer() {
   }
 }
 
-void handleFileList() {
+void handleFileList()
+{
   Dir dir = LittleFS.openDir("/");
   FSInfo fs_info;
   String output;
@@ -99,7 +94,8 @@ void handleFileList() {
   output += fs_info.usedBytes;
   output += ':';
   output += fs_info.totalBytes;
-  while (dir.next()) {
+  while (dir.next())
+  {
     Serial.print(dir.fileName());
     Serial.print(' ');
     Serial.println(dir.fileSize());
@@ -116,26 +112,36 @@ void handleFileList() {
   Serial.println(ESP.getFreeHeap());
 }
 
-void handleFileUpload() {
-  if (server.uri() != "/e") {
+void handleFileUpload()
+{
+  if (server.uri() != "/e")
+  {
     return;
   }
   HTTPUpload &upload = server.upload();
-  if (upload.status == UPLOAD_FILE_START) {
+  if (upload.status == UPLOAD_FILE_START)
+  {
     String filename = upload.filename;
-    if (!filename.startsWith("/")) {
+    if (!filename.startsWith("/"))
+    {
       filename = "/" + filename;
     }
     Serial.print(F("handleFileUpload Name: "));
     Serial.println(filename);
     fsUploadFile = LittleFS.open(filename, "w");
     filename = String();
-  } else if (upload.status == UPLOAD_FILE_WRITE) {
-    if (fsUploadFile) {
+  }
+  else if (upload.status == UPLOAD_FILE_WRITE)
+  {
+    if (fsUploadFile)
+    {
       fsUploadFile.write(upload.buf, upload.currentSize);
     }
-  } else if (upload.status == UPLOAD_FILE_END) {
-    if (fsUploadFile) {
+  }
+  else if (upload.status == UPLOAD_FILE_END)
+  {
+    if (fsUploadFile)
+    {
       fsUploadFile.close();
     }
     Serial.print(F("handleFileUpload Size: "));
@@ -146,18 +152,22 @@ void handleFileUpload() {
 const char send_bad_args[] PROGMEM = "BAD ARGS";
 const char send_bad_path[] PROGMEM = "BAD PATH";
 
-void handleFileDelete() {
+void handleFileDelete()
+{
   const char *txtplain = "text/plain";
-  if (server.args() == 0) {
+  if (server.args() == 0)
+  {
     return server.send_P(500, txtplain, send_bad_args);
   }
   String path = server.arg(0);
   Serial.print(F("handleFileDelete: "));
   Serial.println(path);
-  if (path == "/") {
+  if (path == "/")
+  {
     return server.send_P(500, txtplain, send_bad_path);
   }
-  if (!LittleFS.exists(path)) {
+  if (!LittleFS.exists(path))
+  {
     return server.send(404, txtplain, "404");
   }
   LittleFS.remove(path);
@@ -165,11 +175,13 @@ void handleFileDelete() {
   path = String();
 }
 
-void handleRoot() {
+void handleRoot()
+{
   server.send_P(200, "text/html", index_html);
 }
 
-void serverSetup() {
+void serverSetup()
+{
   Serial.println();
   Serial.print(F("Configuring access point..."));
   WiFi.softAP(ssid, password);
@@ -180,10 +192,9 @@ void serverSetup() {
   server.on("/l", HTTP_GET, handleFileList);
   server.on("/e", HTTP_DELETE, handleFileDelete);
   server.on(
-    "/e", HTTP_POST, []() {
-      server.send(200, "text/plain", "");
-    },
-    handleFileUpload);
+      "/e", HTTP_POST, []()
+      { server.send(200, "text/plain", ""); },
+      handleFileUpload);
   MDNS.begin(host);
   httpUpdater.setup(&server);
   server.begin();
@@ -192,6 +203,7 @@ void serverSetup() {
   Serial.println(F("HTTP server started"));
 }
 
-void serverLoop() {
+void serverLoop()
+{
   server.handleClient();
 }

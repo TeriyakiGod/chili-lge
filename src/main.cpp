@@ -1,42 +1,23 @@
-#include "esp_lge.h"
+#include <esp_lge.h>
 #include <LittleFS.h>
 #include <EEPROM.h>
-#include "ESP8266WiFi.h"
+#include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <Wire.h>
-#include "lge_memory.h"
-#include "cpu.h"
-#include "display.h"
-#include "sound.h"
-#include "io.h"
-#include "rom.h"
+#include <lge_memory.h>
+#include <cpu.h>
+#include <display.h>
+#include <sound.h>
+#include <io.h>
+#include <rom.h>
 
-TFT_eSPI tft = TFT_eSPI();
-Coos<4, 0> coos;
-
-uint8_t i2c_adress;
-uint8_t thiskey;
-uint8_t serial_used = 0;
-char c;
-Ticker timer;
-int delay_rtttl = 50;
-uint16_t cadr_count = 0;
-unsigned long timeF, timeR;
-uint16_t timeCpu = 0, timeGpu = 0, timeSpr = 0, cpuOPS = 0, cpuOPSD = 0;
-uint8_t fps, fileIsLoad;
-uint8_t timeForRedraw = 48;
-uint8_t fixed_res_bit = 8;
-volatile uint16_t timers[8];
-
-uint16_t palette[16] __attribute__((aligned));
-uint16_t sprtpalette[16] __attribute__((aligned));
-
-uint16_t bgr_to_rgb(uint16_t c) {
+uint16_t bgr_to_rgb(uint16_t c)
+{
   return ((c & 0x001f) << 11) + ((c & 0xf800) >> 11) + (c & 0x07e0);
 }
 
-
-unsigned char hexToByte(char h) {
+unsigned char hexToByte(char h)
+{
   if (h < 48)
     return 48;
   if (h >= 48 && h <= 57)
@@ -48,26 +29,32 @@ unsigned char hexToByte(char h) {
   return h;
 }
 
-void loadFromSerial() {
+void loadFromSerial()
+{
   char c;
   unsigned char n;
   int16_t j = 0;
   for (int16_t i = 0; i < RAM_SIZE; i++)
     writeMem(i, 0);
-  while (c != '.') {
-    if (Serial.available()) {
+  while (c != '.')
+  {
+    if (Serial.available())
+    {
       c = Serial.read();
       Serial.print(c);
-      if (c == '$') {
+      if (c == '$')
+      {
         n = 48;
-        while (n > 15) {
+        while (n > 15)
+        {
           c = Serial.read();
           n = hexToByte(c);
         }
         Serial.print(c);
         writeMem(j, n << 4);
         n = 48;
-        while (n > 15) {
+        while (n > 15)
+        {
           c = Serial.read();
           n = hexToByte(c);
         }
@@ -85,8 +72,10 @@ void loadFromSerial() {
   cpuInit();
 }
 
-void viewEEPROM() {
-  for (int16_t i = 0; i < EEPROM_SIZE; i++) {
+void viewEEPROM()
+{
+  for (int16_t i = 0; i < EEPROM_SIZE; i++)
+  {
     if (i % 32 == 0)
       Serial.println();
     if (EEPROM.read(i) < 0x10)
@@ -96,49 +85,73 @@ void viewEEPROM() {
   }
 }
 
-void changeSettings() {
+void changeSettings()
+{
   fileIsLoad = false;
-  if (Serial.available()) {
+  if (Serial.available())
+  {
     c = Serial.read();
     Serial.print(c);
-    if (c == 'm') {
+    if (c == 'm')
+    {
       loadFromSerial();
       fileIsLoad = true;
       cpuInit();
       return;
-    } else if (c == 'r') {
+    }
+    else if (c == 'r')
+    {
       ESP.reset();
       return;
-    } else if (c == 'd') {
+    }
+    else if (c == 'd')
+    {
       debug();
       Serial.print(F("kIPS"));
       Serial.println(cpuOPSD, DEC);
       return;
-    } else if (c == 'e') {
+    }
+    else if (c == 'e')
+    {
       viewEEPROM();
-    } else if (c == 'v') {
+    }
+    else if (c == 'v')
+    {
       Serial.println();
       Serial.println(F("input new resolution"));
       int w = 0;
       int h = 0;
-      while (Serial.available() == 0) {}
+      while (Serial.available() == 0)
+      {
+      }
       c = Serial.read();
-      if (c <= 47 || c > 57) {
-        while (Serial.available() == 0) {}
+      if (c <= 47 || c > 57)
+      {
+        while (Serial.available() == 0)
+        {
+        }
         c = Serial.read();
       }
-      while (c > 47 && c <= 57) {
+      while (c > 47 && c <= 57)
+      {
         w = w * 10 + (c - 48);
-        while (Serial.available() == 0) {}
+        while (Serial.available() == 0)
+        {
+        }
         c = Serial.read();
       }
       Serial.print(w);
       Serial.print(' ');
-      while (Serial.available() == 0) {}
+      while (Serial.available() == 0)
+      {
+      }
       c = Serial.read();
-      while (c > 47 && c <= 57) {
+      while (c > 47 && c <= 57)
+      {
         h = h * 10 + (c - 48);
-        while (Serial.available() == 0) {}
+        while (Serial.available() == 0)
+        {
+        }
         c = Serial.read();
       }
       Serial.println(h);
@@ -148,9 +161,11 @@ void changeSettings() {
   }
 }
 
-void coos_cpu(void) {
-  while (1) {
-    COOS_DELAY(0);  // 1 ms
+void coos_cpu(void)
+{
+  while (1)
+  {
+    COOS_DELAY(0); // 1 ms
     timeR = millis();
     cpuOPS += 1;
     cpuRun(1000);
@@ -160,8 +175,10 @@ void coos_cpu(void) {
   }
 }
 
-void coos_screen(void) {
-  while (1) {
+void coos_screen(void)
+{
+  while (1)
+  {
     yield();
     COOS_DELAY(timeForRedraw);
     timeR = millis();
@@ -176,7 +193,8 @@ void coos_screen(void) {
     setRedraw();
     timeGpu += millis() - timeR;
     cadr_count++;
-    if (millis() - timeF > 1000) {
+    if (millis() - timeF > 1000)
+    {
       timeF = millis();
       fps = cadr_count;
       cadr_count = cadr_count % 2;
@@ -184,8 +202,10 @@ void coos_screen(void) {
   }
 }
 
-void IRAM_ATTR timer_tick(void) {
-  for (int16_t i = 0; i < 8; i++) {
+void IRAM_ATTR timer_tick(void)
+{
+  for (int16_t i = 0; i < 8; i++)
+  {
     if (timers[i] >= 1)
       timers[i]--;
   }
@@ -193,22 +213,27 @@ void IRAM_ATTR timer_tick(void) {
   updateRtttl();
 }
 
-void coos_key(void) {
-  while (1) {
-    COOS_DELAY(100);  // 100 ms
+void coos_key(void)
+{
+  while (1)
+  {
+    COOS_DELAY(100); // 100 ms
     getKey();
-    if (thiskey == 192)  //key select + start
+    if (thiskey == 192) // key select + start
       pause();
     if (!serial_used)
       changeSettings();
   }
 }
 
-void coos_info(void) {
-  while (1) {
-    COOS_DELAY(1000);  // 1000 ms
+void coos_info(void)
+{
+  while (1)
+  {
+    COOS_DELAY(1000); // 1000 ms
 #ifdef DEBUG_ON_SCREEN
-    if (getDisplayXOffset() > 30) {
+    if (getDisplayXOffset() > 30)
+    {
       tft.fillRect(0, 0, 30, 92, 0x0000);
       tft.setCursor(1, 0);
       tft.println("fps");
@@ -231,8 +256,9 @@ void coos_info(void) {
   }
 }
 
-void setup() {
-  //system_update_cpu_freq(FREQUENCY);
+void setup()
+{
+  // system_update_cpu_freq(FREQUENCY);
   Serial.begin(115200);
   EEPROM.begin(EEPROM_SIZE);
   Serial.println();
@@ -241,34 +267,39 @@ void setup() {
   Serial.print(F(" build "));
   Serial.print(F(__DATE__));
   randomSeed(RANDOM_REG32);
-  //init keyboard
+  // init keyboard
   keyboardInit();
 
-  tft.init();  // initialize LCD
+  tft.init(); // initialize LCD
   tft.setRotation(SCREEN_ROTATION);
   tft.fillScreen(0x0000);
 
-
-  //Initialize File System
+  // Initialize File System
   LittleFSConfig cfg;
   cfg.setAutoFormat(false);
   LittleFS.setConfig(cfg);
   tft.setTextColor(TFT_GREEN);
-  if (LittleFS.begin()) {
+  if (LittleFS.begin())
+  {
     Serial.println(F("LittleFS Initialize....ok"));
-  } else {
+  }
+  else
+  {
     tft.setCursor(2, 0);
     tft.print(F("LittleFS init FAILED"));
     tft.setCursor(2, 10);
     tft.print(F("FORMATING..."));
     Serial.println(F("LittleFS init FAILED. Formating..."));
-    if (LittleFS.format()) {
+    if (LittleFS.format())
+    {
       Serial.println(F("Formating DONE"));
       tft.setCursor(2, 18);
       tft.print(F("DONE!"));
       LittleFS.begin();
       delay(2000);
-    } else {
+    }
+    else
+    {
       Serial.println(F("Formatting FAILED"));
       tft.setCursor(2, 18);
       tft.print(F("Formatting FAILED"));
@@ -277,8 +308,8 @@ void setup() {
   }
 
   // turn off ESP8266 RF
-  //WiFiOff();
-  //delay(1);
+  // WiFiOff();
+  // delay(1);
   memoryAlloc();
   loadSplashscreen();
   cpuInit();
@@ -295,9 +326,10 @@ void setup() {
   coos.register_task(coos_screen);
   coos.register_task(coos_key);
   coos.register_task(coos_info);
-  coos.start();  // init registered tasks
+  coos.start(); // init registered tasks
 }
 
-void loop() {
-  coos.run();  // Coos scheduler
+void loop()
+{
+  coos.run(); // Coos scheduler
 }
