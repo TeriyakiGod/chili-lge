@@ -8,6 +8,7 @@
 #include <esp_lge.h>
 #include <rom.h>
 #include <LITTLEFS.h>
+#include <progmem/romFlatRace.h>
 
 uint32_t calculateCRC32inRTC(const uint8_t *data)
 {
@@ -388,7 +389,7 @@ void fileList(String path)
     setColor(1);
     if (startpos == 0)
     {
-      putString(romName, lst * 17 - 16);
+      putString(ROM_NAME, lst * 17 - 16);
       loadRomIco();
       drawImg(1024, 0, lst * 17 - 16, 24, 16);
       lst++;

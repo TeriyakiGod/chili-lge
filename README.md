@@ -1,7 +1,9 @@
 # esp-lge
 TODO:
+- [ ] Fix loading roms
 - [ ] Add a description
 - [ ] Refactor the project structure
+- [x] Move project to platformio/arduino
 - [ ] Try to move to platformio/esp-idf
 - [ ] configure the project for vscode
 - [ ] Add a CI/CD pipeline
