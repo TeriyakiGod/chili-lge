@@ -6,11 +6,13 @@
 #include "settings.h"
 #include <progmem/icons.h>
 
-struct {
+struct RTCData {
   int16_t saveMenuPos;
   int16_t saveStartMenuPos;
   uint32_t crc32;
-} rtcData;
+};
+
+extern RTCData rtcData;
 
 uint32_t calculateCRC32inRTC(const uint8_t *data);
 uint8_t drawDialog();

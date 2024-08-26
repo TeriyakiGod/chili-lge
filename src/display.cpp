@@ -1,16 +1,16 @@
 // TODO: Remove virtual keyboard stuff
 #include <display.h>
 
-uint8_t *screen __attribute__ ((aligned));
-uint8_t *sprite_screen __attribute__ ((aligned));
-uint32_t line_is_draw[4] __attribute__ ((aligned));
-char charArray[340] __attribute__ ((aligned));
-uint16_t pix_buffer[SCREEN_REAL_WIDTH] __attribute__ ((aligned));
+uint8_t *screen __attribute__((aligned));
+uint8_t *sprite_screen __attribute__((aligned));
+uint32_t line_is_draw[4] __attribute__((aligned));
+char charArray[340] __attribute__((aligned));
+uint16_t pix_buffer[SCREEN_REAL_WIDTH] __attribute__((aligned));
 uint16_t rscreenWidth;
 uint16_t rscreenHeight;
 uint16_t displayXOffset = 32;
-struct Sprite sprite_table[SPRITE_COUNT] __attribute__ ((aligned));
-struct Particle particles[PARTICLE_COUNT] __attribute__ ((aligned));
+struct Sprite sprite_table[SPRITE_COUNT] __attribute__((aligned));
+struct Particle particles[PARTICLE_COUNT] __attribute__((aligned));
 struct Emitter emitter;
 struct Tile tile;
 struct CustomFont custom_font;
@@ -125,10 +125,10 @@ void display_init()
   emitter.size = 0;
   emitter.width = 0;
   emitter.height = 0;
-  uint8_t clipx0 = 0;
-  uint8_t clipx1 = 128;
-  uint8_t clipy0 = 0;
-  uint8_t clipy1 = 128;
+  clipx0 = 0;
+  clipx1 = 128;
+  clipy0 = 0;
+  clipy1 = 128;
   tile.adr = 0;
   tile.collisionMap = 0;
   for (int8_t i = 0; i < PARTICLE_COUNT; i++)
@@ -185,7 +185,7 @@ char pause()
 void drawPause()
 {
   int i = 0;
-  uint8_t bit;
+  uint8_t bit = 0;
   uint16_t adr = 0;
   for (int y = 0; y < 30; y++)
     for (int x = 0; x < 32; x++)
@@ -275,7 +275,7 @@ void redrawScreen()
 {
   int x_ratio = (int)((128 << 16) / rscreenWidth);
   int y_ratio = (int)((128 << 16) / rscreenHeight);
-  int x2, hx2, y2, startx, endx, j;
+  int x2, hx2, y2, startx, endx;
   int prevy2 = -1;
   for (int i = 0; i < rscreenHeight; i++)
   {
@@ -669,7 +669,8 @@ void drawSpr(int16_t n, int16_t x, int16_t y)
   uint16_t ww = w;
   int16_t c, s;
   uint16_t sz, x1, y1, x2, y2, endx, endy, i;
-  uint8_t pixel, ibit;
+  uint8_t pixel;
+  uint8_t ibit = 0;
   w = w / 2;
   sz = sprite_table[n].size;
   if (!SPRITE_IS_ONEBIT(n))
@@ -1130,7 +1131,7 @@ void drawImageBit(int16_t adr, int16_t x1, int16_t y1, int16_t w, int16_t h)
     return;
   }
   int16_t i = 0;
-  uint8_t ibit;
+  uint8_t ibit = 0;
   for (int16_t y = 0; y < h; y++)
     for (int16_t x = 0; x < w; x++)
     {
@@ -1153,12 +1154,12 @@ void drawImgS(int16_t a, int16_t x, int16_t y, int32_t w, int32_t h)
   uint32_t p, x2, y2, color, s, endx;
   s = imageSize;
   endx = ((w * s) >> fixed_res_bit);
-  for (int32_t yi = 0; yi < ((h * s) >> fixed_res_bit); yi++)
+  for (uint32_t yi = 0; yi < ((h * s) >> fixed_res_bit); yi++)
   {
     y2 = ((yi << fixed_res_bit) + 1) / s;
     if ((y + yi) > 128)
       return;
-    for (int32_t xi = 0; xi < endx; xi++)
+    for (uint32_t xi = 0; xi < endx; xi++)
     {
       x2 = ((xi << fixed_res_bit) + 1) / s;
       if (x2 & 1)
@@ -1247,12 +1248,12 @@ void drawImageBitS(int16_t a, int16_t x, int16_t y, int16_t w, int16_t h)
 {
   uint32_t p, x2, y2, s;
   s = imageSize;
-  for (int32_t yi = 0; yi < ((h * s) >> fixed_res_bit); yi++)
+  for (uint32_t yi = 0; yi < ((h * s) >> fixed_res_bit); yi++)
   {
     y2 = ((yi << fixed_res_bit) + 1) / s;
     if ((y + yi) > 128)
       return;
-    for (int32_t xi = 0; xi < ((w * s) >> fixed_res_bit); xi++)
+    for (uint32_t xi = 0; xi < ((w * s) >> fixed_res_bit); xi++)
     {
       x2 = ((xi << fixed_res_bit) + 1) / s;
       p = readMem(a + (x2 + y2 * w) / 8);
@@ -1934,7 +1935,7 @@ void fllTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2
   }
 }
 
-void putString(char s[], int8_t y)
+void putString(const char* s, int8_t y)
 {
   int8_t i = 0;
   while (s[i] != 0 && i < 32)

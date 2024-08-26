@@ -2,7 +2,7 @@
 #define RAM_SIZE 20 * 1024
 #define FREQUENCY 160
 #define APPSK "87654321"
-#define BUILD_VERSION "esp-lge v1.2.0"
+#define BUILD_VERSION "chili-lge v2.0.0"
 #define APSSID "JALAPENO"
 #define APHOST "jalapeno"
 #define SOUNDPIN 0  // PIN D3

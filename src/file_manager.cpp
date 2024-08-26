@@ -10,6 +10,8 @@
 #include <LITTLEFS.h>
 #include <progmem/romFlatRace.h>
 
+RTCData rtcData;
+
 uint32_t calculateCRC32inRTC(const uint8_t *data)
 {
   size_t length = sizeof(rtcData) - 4;
@@ -345,7 +347,8 @@ void fileList(String path)
   int16_t startpos = 0;
   int16_t fileCount = 1;
   int16_t skip = 0;
-  uint8_t i, b;
+  uint8_t i;
+  uint8_t b = 0;
   ESP.rtcUserMemoryRead(0, (uint32_t *)&rtcData, sizeof(rtcData));
   if (rtcData.crc32 != calculateCRC32inRTC((uint8_t *)&rtcData))
   {
@@ -542,7 +545,7 @@ void fileList(String path)
 
 void loadBinFromSPIFS(char fileName[])
 {
-  int i;
+  size_t i;
   for (i = 0; i < RAM_SIZE; i++)
     writeMem(i, 0);
   fs::File f = LittleFS.open(fileName, "r");
@@ -550,7 +553,7 @@ void loadBinFromSPIFS(char fileName[])
     for (i = 0; i < f.size(); i++)
     {
       writeMem(i, (uint8_t)f.read());
-    }
+  }
   Serial.print(F("loaded "));
   Serial.print(i);
   Serial.println(F(" byte"));
@@ -562,14 +565,14 @@ void loadBinFromSPIFS(char fileName[])
 void loadLgeFromSPIFS(char fileName[])
 {
   int n, j, i = 0;
-  uint8_t b, l;
+  uint8_t b;
   int16_t length, position, point;
   for (i = 0; i < RAM_SIZE; i++)
     writeMem(i, 0);
   fs::File f = LittleFS.open(fileName, "r");
   if ((char)f.read() == 'l' && (char)f.read() == 'g' && (char)f.read() == 'e')
   {
-    l = (uint8_t)f.read();
+    f.read();
   }
   else
     return;

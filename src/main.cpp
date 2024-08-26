@@ -51,7 +51,7 @@ unsigned char hexToByte(char h)
 
 void loadFromSerial()
 {
-  char c;
+  char c = 0;
   unsigned char n;
   int16_t j = 0;
   for (int16_t i = 0; i < RAM_SIZE; i++)

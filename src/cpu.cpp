@@ -8,8 +8,8 @@
 #include <file_manager.h>
 #include <sound.h>
 
-int16_t reg[16] __attribute__ ((aligned));
-int16_t shadow_reg[16] __attribute__ ((aligned));
+int16_t reg[16] __attribute__((aligned));
+int16_t shadow_reg[16] __attribute__((aligned));
 uint16_t pc = 0;
 uint16_t interrupt = 0;
 uint16_t dataName = 0;
@@ -358,7 +358,9 @@ void unpackingLZ(uint16_t to_adr, uint16_t a, uint16_t num_bytes)
   {
     if ((readMem(a) & 128) == 0)
     {
-      length = ((readMem(a++) & 127) << 8) + readMem(a++);
+      int first_part = (readMem(a++) & 127) << 8;
+      int second_part = readMem(a++);
+      length = first_part + second_part;
       for (j = 0; j < length; j++)
       {
         writeMem(to_adr++, readMem(a++));
@@ -368,7 +370,9 @@ void unpackingLZ(uint16_t to_adr, uint16_t a, uint16_t num_bytes)
     else
     {
       length = (readMem(a) & 127) >> 1;
-      position = (((readMem(a++) & 1) << 8) + readMem(a++));
+      int first_part = readMem(a++) & 1;
+      int second_part = readMem(a++);
+      position = (first_part << 8) + second_part;
       point = to_adr - position;
       for (j = 0; j < length; j++)
       {

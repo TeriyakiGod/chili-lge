@@ -186,7 +186,7 @@ void drwCirc(int16_t x0, int16_t y0, int16_t r);
 void fllCirc(int16_t x0, int16_t y0, int16_t r);
 void drwTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3);
 void fllTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
-void putString(char s[], int8_t y);
+void putString(const char* s, int8_t y);
 void putchar(char c, uint8_t x, uint8_t y);
 void drawChar(uint8_t c, uint16_t x, uint16_t y);
 void drawString(uint16_t s, uint16_t x, uint16_t y);
@@ -276,7 +276,7 @@ inline void redrawSprites()
 inline void testSpriteCollision()
 {
     int n, i;
-    int16_t x0, y0, x1, y1, newspeed;
+    int16_t x0, y0, x1, y1;
     int32_t iwidth, iheight, nwidth, nheight;
     for (n = 0; n < SPRITE_COUNT; n++)
         sprite_table[n].collision = -1;

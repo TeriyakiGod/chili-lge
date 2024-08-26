@@ -216,9 +216,11 @@ int playRtttl()
   }
   scale += OCTAVE_OFFSET;
   if (c == ',')
+  {
     NEXT_CHAR_IN_P // skip comma for next note (or we may be at the end)
                    // now play the note
         rtttl.delay = duration;
+  }
   if (note)
   {
     rtttl.this_tone = pgm_read_word(&notes[note + ((scale - 4) * 12)]);
