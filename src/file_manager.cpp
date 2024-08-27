@@ -1,6 +1,6 @@
 #include <file_manager.h>
 #include <display.h>
-#include <io.h>
+#include <input.h>
 #include <esp_lge.h>
 #include <cpu.h>
 #include <lge_memory.h>
@@ -378,9 +378,9 @@ void fileList(String path)
   }
   if (startpos > fileCount)
     startpos = 0;
-  Serial.print(F("find "));
+  Serial.print(F("\nLoaded "));
   Serial.print(fileCount);
-  Serial.println(F(" files"));
+  Serial.print(F(" files\n"));
   while (1)
   {
     clearScr(0);
@@ -557,10 +557,10 @@ void loadBinFromSPIFS(char fileName[])
     {
       writeMem(i, (uint8_t)f.read());
   }
-  Serial.print(F("loaded "));
+  Serial.print(F("Loaded "));
   Serial.print(i);
-  Serial.println(F(" byte"));
-  Serial.print(F("free heap "));
+  Serial.println(F(" bytes"));
+  Serial.print(F("Free heap: "));
   Serial.println(system_get_free_heap_size());
   f.close(); // Close file
 }
@@ -610,10 +610,10 @@ void loadLgeFromSPIFS(char fileName[])
       }
     }
   }
-  Serial.print(F("loaded "));
-  Serial.print(n);
-  Serial.println(F(" byte"));
-  Serial.print(F("free heap "));
+  Serial.print(F("Loaded "));
+  Serial.print(i);
+  Serial.println(F(" bytes"));
+  Serial.print(F("Free heap: "));
   Serial.println(system_get_free_heap_size());
   f.close(); // Close file
 }

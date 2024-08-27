@@ -1,3 +1,9 @@
 {
-
+    "search.exclude": {
+        "**/.git": true,
+        "**/.pio": true,
+        "**/.vscode": true,
+        "**/data": true,
+        "**/lib": true
+    },
 }

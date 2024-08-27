@@ -8,15 +8,13 @@
 #include <cpu.h>
 #include <display.h>
 #include <sound.h>
-#include <io.h>
 #include <rom.h>
+#include <input.h>
 
 TFT_eSPI tft = TFT_eSPI();
 Coos<4, 0> coos;
 
 uint8_t i2c_adress;
-uint8_t thiskey;
-uint8_t serial_used = 0;
 char c;
 Ticker timer;
 int delay_rtttl = 50;
@@ -274,9 +272,8 @@ void coos_info(void)
 }
 
 void initializeSerial() {
-    Serial.begin(115200);
+    Serial.begin(MONITOR_SPEED);
     Serial.println();
-    Serial.print(F("version "));
     Serial.print(F(BUILD_VERSION));
     Serial.print(F(" build "));
     Serial.print(F(__DATE__));
@@ -318,7 +315,7 @@ void initializeFileSystem() {
     LittleFS.setConfig(cfg);
     tft.setTextColor(TFT_GREEN);
     if (LittleFS.begin()) {
-        Serial.println(F("LittleFS Initialize....ok"));
+        Serial.println(F("\nLittleFS Initialized"));
     } else {
         formatFileSystem();
     }
@@ -342,10 +339,13 @@ void setup() {
     cpuInit();
     keyboardInit();
 
-    Serial.print(F("FreeHeap:"));
+    Serial.print(F("FreeHeap: "));
     Serial.println(ESP.getFreeHeap());
-    Serial.println(F("print \"vW H\" for change viewport, \"d name\" for delete file,"));
-    Serial.println(F("\"s name\" for save file and \"m\" for load to memory"));
+    Serial.println(F("\nCommands:"));
+    Serial.println(F("v W H - change viewport"));
+    Serial.println(F("d name - delete file"));
+    Serial.println(F("s name - to save file"));
+    Serial.println(F("m - load to memory"));
 
     setScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
     clearScr(0);

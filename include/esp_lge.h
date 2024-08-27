@@ -11,7 +11,6 @@ extern TFT_eSPI tft;
 extern Coos<4, 0> coos;
 
 extern uint8_t i2c_adress;
-extern uint8_t thiskey;
 extern uint8_t serial_used;
 extern char c;
 extern Ticker timer;

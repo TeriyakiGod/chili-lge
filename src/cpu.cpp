@@ -4,9 +4,10 @@
 #include <display.h>
 #include <sound.h>
 #include <esp_lge.h>
-#include <io.h>
+#include <serial.h>
 #include <file_manager.h>
 #include <sound.h>
+#include <input.h>
 
 int16_t reg[16] __attribute__((aligned));
 int16_t shadow_reg[16] __attribute__((aligned));

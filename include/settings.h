@@ -1,7 +1,8 @@
 #define JALAPENO
 #define RAM_SIZE 20 * 1024
 #define FREQUENCY 160
-#define APPSK "87654321"
+#define MONITOR_SPEED 74800 
+#define APPSK "88888888"
 #define BUILD_VERSION "chili-lge v2.0.0"
 #define APSSID "JALAPENO"
 #define APHOST "jalapeno"

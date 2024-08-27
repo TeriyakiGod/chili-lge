@@ -5,11 +5,13 @@
 #include "settings.h"
 #include <font_a.h>
 #include <sound.h>
-#include <io.h>
+#include <serial.h>
 #include <esp_lge.h>
 #include <file_manager.h>
 #include <lge_memory.h>
 #include <cpu.h>
+#include <input.h>
+
 // Definitions
 #define SPRITE_IS_SOLID(a) (sprite_table[a].flags & 1)
 #define SPRITE_IS_SCROLLED(a) (sprite_table[a].flags & 2)
