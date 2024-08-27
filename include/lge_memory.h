@@ -22,10 +22,9 @@ inline uint8_t readMem(uint16_t adr)
 
 inline void writeInt(uint16_t adr, int16_t n)
 {
-    int8_t *nPtr;
     if (adr < RAM_SIZE - 1)
     {
-        nPtr = (int8_t *)&n;
+        int8_t *nPtr = reinterpret_cast<int8_t *>(&n);
         lge_mem[adr++] = *nPtr;
         nPtr++;
         lge_mem[adr] = *nPtr;
@@ -35,10 +34,9 @@ inline void writeInt(uint16_t adr, int16_t n)
 inline int16_t readInt(uint16_t adr)
 {
     int16_t n;
-    int8_t *nPtr;
     if (adr < RAM_SIZE - 1)
     {
-        nPtr = (int8_t *)&n;
+        int8_t *nPtr = reinterpret_cast<int8_t *>(&n);
         *nPtr = lge_mem[adr++];
         nPtr++;
         *nPtr = lge_mem[adr];

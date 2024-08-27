@@ -10,10 +10,6 @@
 #include <file_manager.h>
 #include <lge_memory.h>
 #include <cpu.h>
-#include <progmem/pauseImage.h>
-#include <progmem/keyboardImage.h>
-#include <progmem/color_palette.h>
-
 // Definitions
 #define SPRITE_IS_SOLID(a) (sprite_table[a].flags & 1)
 #define SPRITE_IS_SCROLLED(a) (sprite_table[a].flags & 2)

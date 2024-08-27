@@ -24,9 +24,6 @@ extern uint8_t timeForRedraw;
 extern uint8_t fixed_res_bit;
 extern volatile uint16_t timers[8];
 
-extern uint16_t palette[16] __attribute__((aligned));
-extern uint16_t sprtpalette[16] __attribute__((aligned));
-
 uint16_t bgr_to_rgb(uint16_t c);
 unsigned char hexToByte(char h);
 void loadFromSerial();

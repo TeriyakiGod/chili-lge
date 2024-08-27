@@ -7,10 +7,13 @@
 #include <esp_wifi_server.h>
 #include <esp_lge.h>
 #include <rom.h>
-#include <LITTLEFS.h>
+#include "user_interface.h"
 #include <progmem/romFlatRace.h>
+#include <progmem/icons.h>
+#include <LittleFS.h>
+#include <EEPROM.h>
 
-RTCData rtcData;
+struct RTCData rtcData;
 
 uint32_t calculateCRC32inRTC(const uint8_t *data)
 {

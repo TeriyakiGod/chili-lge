@@ -28,9 +28,6 @@ uint8_t timeForRedraw = 48;
 uint8_t fixed_res_bit = 8;
 volatile uint16_t timers[8];
 
-uint16_t palette[16] __attribute__((aligned));
-uint16_t sprtpalette[16] __attribute__((aligned));
-
 uint16_t bgr_to_rgb(uint16_t c)
 {
   return ((c & 0x001f) << 11) + ((c & 0xf800) >> 11) + (c & 0x07e0);
@@ -276,78 +273,88 @@ void coos_info(void)
   }
 }
 
-void setup()
-{
-  // system_update_cpu_freq(FREQUENCY);
-  Serial.begin(115200);
-  EEPROM.begin(EEPROM_SIZE);
-  Serial.println();
-  Serial.print(F("version "));
-  Serial.print(F(BUILD_VERSION));
-  Serial.print(F(" build "));
-  Serial.print(F(__DATE__));
-  randomSeed(RANDOM_REG32);
-  // init keyboard
-  keyboardInit();
+void initializeSerial() {
+    Serial.begin(115200);
+    Serial.println();
+    Serial.print(F("version "));
+    Serial.print(F(BUILD_VERSION));
+    Serial.print(F(" build "));
+    Serial.print(F(__DATE__));
+}
 
-  tft.init(); // initialize LCD
-  tft.setRotation(SCREEN_ROTATION);
-  tft.fillScreen(0x0000);
+void initializeEEPROM() {
+    EEPROM.begin(EEPROM_SIZE);
+}
 
-  // Initialize File System
-  LittleFSConfig cfg;
-  cfg.setAutoFormat(false);
-  LittleFS.setConfig(cfg);
-  tft.setTextColor(TFT_GREEN);
-  if (LittleFS.begin())
-  {
-    Serial.println(F("LittleFS Initialize....ok"));
-  }
-  else
-  {
+void initializeDisplay() {
+    tft.init();
+    tft.setRotation(SCREEN_ROTATION);
+    tft.fillScreen(0x0000);
+}
+
+void formatFileSystem() {
     tft.setCursor(2, 0);
     tft.print(F("LittleFS init FAILED"));
     tft.setCursor(2, 10);
     tft.print(F("FORMATING..."));
     Serial.println(F("LittleFS init FAILED. Formating..."));
-    if (LittleFS.format())
-    {
-      Serial.println(F("Formating DONE"));
-      tft.setCursor(2, 18);
-      tft.print(F("DONE!"));
-      LittleFS.begin();
-      delay(2000);
+    if (LittleFS.format()) {
+        Serial.println(F("Formating DONE"));
+        tft.setCursor(2, 18);
+        tft.print(F("DONE!"));
+        LittleFS.begin();
+        delay(2000);
+    } else {
+        Serial.println(F("Formatting FAILED"));
+        tft.setCursor(2, 18);
+        tft.print(F("Formatting FAILED"));
+        delay(2000);
     }
-    else
-    {
-      Serial.println(F("Formatting FAILED"));
-      tft.setCursor(2, 18);
-      tft.print(F("Formatting FAILED"));
-      delay(2000);
-    }
-  }
-
-  // turn off ESP8266 RF
-  // WiFiOff();
-  // delay(1);
-  memoryAlloc();
-  loadSplashscreen();
-  cpuInit();
-  Serial.print(F("FreeHeap:"));
-  Serial.println(ESP.getFreeHeap());
-  Serial.println(F("print \"vW H\" for change viewport, \"d name\" for delite file,"));
-  Serial.println(F("\"s name\" for save file and \"m\" for load to memory"));
-
-  setScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
-  clearScr(0);
-  setColor(1);
-  timer.attach(0.001, timer_tick);
-  coos.register_task(coos_cpu);
-  coos.register_task(coos_screen);
-  coos.register_task(coos_key);
-  coos.register_task(coos_info);
-  coos.start(); // init registered tasks
 }
+
+void initializeFileSystem() {
+    LittleFSConfig cfg;
+    cfg.setAutoFormat(false);
+    LittleFS.setConfig(cfg);
+    tft.setTextColor(TFT_GREEN);
+    if (LittleFS.begin()) {
+        Serial.println(F("LittleFS Initialize....ok"));
+    } else {
+        formatFileSystem();
+    }
+}
+
+void initializeCoosTasks() {
+    coos.register_task(coos_cpu);
+    coos.register_task(coos_screen);
+    coos.register_task(coos_key);
+    coos.register_task(coos_info);
+    coos.start();
+}
+
+void setup() {
+    initializeSerial();
+    initializeEEPROM();
+    initializeDisplay();
+    initializeFileSystem();
+    memoryAlloc();
+    loadSplashscreen();
+    cpuInit();
+    keyboardInit();
+
+    Serial.print(F("FreeHeap:"));
+    Serial.println(ESP.getFreeHeap());
+    Serial.println(F("print \"vW H\" for change viewport, \"d name\" for delete file,"));
+    Serial.println(F("\"s name\" for save file and \"m\" for load to memory"));
+
+    setScreenResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
+    clearScr(0);
+    setColor(1);
+    timer.attach(0.001, timer_tick);
+
+    initializeCoosTasks();
+}
+
 
 void loop()
 {
