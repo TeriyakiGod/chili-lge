@@ -3,7 +3,6 @@
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <SPI.h>
-#include <Wire.h>
 #include <lge_memory.h>
 #include <cpu.h>
 #include <display.h>
@@ -25,11 +24,6 @@ uint8_t fps, fileIsLoad;
 uint8_t timeForRedraw = 48;
 uint8_t fixed_res_bit = 8;
 volatile uint16_t timers[8];
-
-uint16_t bgr_to_rgb(uint16_t c)
-{
-  return ((c & 0x001f) << 11) + ((c & 0xf800) >> 11) + (c & 0x07e0);
-}
 
 unsigned char hexToByte(char h)
 {

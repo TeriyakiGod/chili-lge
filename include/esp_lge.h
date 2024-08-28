@@ -23,7 +23,6 @@ extern uint8_t timeForRedraw;
 extern uint8_t fixed_res_bit;
 extern volatile uint16_t timers[8];
 
-uint16_t bgr_to_rgb(uint16_t c);
 unsigned char hexToByte(char h);
 void loadFromSerial();
 void viewEEPROM();

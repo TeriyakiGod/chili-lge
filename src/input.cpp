@@ -1,30 +1,12 @@
 #include <input.h>
+#include <MCP23017.h>
+#include <Wire.h>
 
+TwoWire wire = TwoWire();
+MCP23017 mcp = MCP23017(0x20, wire);
 uint8_t thiskey = 0;
 
-// These are the pins for ESP8266 boards
-//      Name   GPIO    NodeMCU      Function
-#define PIN_D0  16  // GPIO16       WAKE
-#define PIN_D1   5  // GPIO5        User purpose
-#define PIN_D2   4  // GPIO4        User purpose
-#define PIN_D3   0  // GPIO0        Low on boot means enter FLASH mode
-#define PIN_D4   2  // GPIO2        TXD1 (must be high on boot to go to UART0 FLASH mode)
-#define PIN_D5  14  // GPIO14       HSCLK
-#define PIN_D6  12  // GPIO12       HMISO
-#define PIN_D7  13  // GPIO13       HMOSI  RXD2
-#define PIN_D8  15  // GPIO15       HCS    TXD0 (must be low on boot to enter UART0 FLASH mode)
-#define PIN_D9   3  //              RXD0
-#define PIN_D10  1  //              TXD0
-
-#define PIN_MOSI 8  // SD1          FLASH and overlap mode
-#define PIN_MISO 7  // SD0
-#define PIN_SCLK 6  // CLK
-#define PIN_HWCS 0  // D3
-
-#define PIN_D11  9  // SD2
-#define PIN_D12 10  // SD4
-
-// Button codes //might be fucked up idk
+// Button codes
 #define BTN_UP 1
 #define BTN_DOWN 2
 #define BTN_LEFT 4
@@ -37,15 +19,23 @@ uint8_t thiskey = 0;
 void getKey()
 {
   thiskey = 0;
-  if (digitalRead(PIN_D1) == LOW)
-    thiskey |= BTN_DOWN;
-  if (digitalRead(PIN_D2) == LOW)
-    thiskey |= BTN_A;
+  // 0 0 0 0 START B SELECT A 0 0 0 0 RIGHT LEFT DOWN UP
+  uint16_t input_raw = mcp.read();
+  const uint16_t BITMASK_HIGH = 0x0F00; // 0000 START B SELECT A 0000 0000 0000
+  const uint16_t BITMASK_LOW = 0x000F; // 0000 0000 0000 RIGHT LEFT DOWN UP
+  uint8_t high_nibble = (~input_raw & BITMASK_HIGH) >> 4;
+  uint8_t low_nibble = (~input_raw & BITMASK_LOW);
+  thiskey = high_nibble | low_nibble;
 }
 
 void keyboardInit()
 {
-  pinMode(PIN_D1, INPUT_PULLUP);
-  pinMode(PIN_D2, INPUT_PULLUP);
-  pinMode(PIN_D3, OUTPUT); // SOUNDPIN
+  wire.begin(D2, D1);
+  mcp.init();
+  //Port A as input (Last pin output only)
+  mcp.portMode(MCP23017Port::A, 0x0F);
+  //Port B as input (Last pin output only)
+  mcp.portMode(MCP23017Port::B, 0x0F); 
+  mcp.writeRegister(MCP23017Register::GPIO_A, 0x00);  //Reset port A 
+  mcp.writeRegister(MCP23017Register::GPIO_B, 0x00);  //Reset port B
 }
