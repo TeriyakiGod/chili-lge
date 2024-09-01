@@ -1,11 +1,9 @@
 #include <file_manager.h>
 #include <display.h>
 #include <input.h>
-#include <esp_lge.h>
 #include <cpu.h>
 #include <lge_memory.h>
 #include <esp_wifi_server.h>
-#include <esp_lge.h>
 #include <rom.h>
 #include "user_interface.h"
 #include <progmem/romFlatRace.h>
@@ -14,7 +12,8 @@
 #include <EEPROM.h>
 
 struct RTCData rtcData;
-
+uint8_t fileIsLoad;
+char c;
 uint32_t calculateCRC32inRTC(const uint8_t *data)
 {
   size_t length = sizeof(rtcData) - 4;
@@ -38,7 +37,70 @@ uint32_t calculateCRC32inRTC(const uint8_t *data)
   }
   return crc;
 }
-
+void changeSettings()
+{
+  fileIsLoad = false;
+  if (Serial.available())
+  {
+    c = Serial.read();
+    Serial.print(c);
+    if (c == 'r')
+    {
+      ESP.reset();
+      return;
+    }
+    else if (c == 'd')
+    {
+      debug();
+      // Serial.print(F("kIPS"));
+      // Serial.println(cpuOPSD, DEC);
+      return;
+    }
+    else if (c == 'v')
+    {
+      Serial.println();
+      Serial.println(F("input new resolution"));
+      int w = 0;
+      int h = 0;
+      while (Serial.available() == 0)
+      {
+      }
+      c = Serial.read();
+      if (c <= 47 || c > 57)
+      {
+        while (Serial.available() == 0)
+        {
+        }
+        c = Serial.read();
+      }
+      while (c > 47 && c <= 57)
+      {
+        w = w * 10 + (c - 48);
+        while (Serial.available() == 0)
+        {
+        }
+        c = Serial.read();
+      }
+      Serial.print(w);
+      Serial.print(' ');
+      while (Serial.available() == 0)
+      {
+      }
+      c = Serial.read();
+      while (c > 47 && c <= 57)
+      {
+        h = h * 10 + (c - 48);
+        while (Serial.available() == 0)
+        {
+        }
+        c = Serial.read();
+      }
+      Serial.println(h);
+      setScreenResolution(w, h);
+      return;
+    }
+  }
+}
 uint8_t drawDialog()
 {
   char txt[] = "Press leftbutton to delete this save.";
@@ -97,15 +159,7 @@ uint8_t drawDialog()
 
 void drawMenuBackground()
 {
-  int16_t i;
-  setColor(1);
-  for (i = 7; i < 121; i++)
-    drwLine(13, i, 115, i);
-  setColor(8);
-  drwLine(12, 6, 116, 6);
-  drwLine(12, 121, 116, 121);
-  drwLine(12, 6, 12, 121);
-  drwLine(116, 6, 116, 121);
+  fillRect(0, 0, 128, 128, 1);
 }
 
 void drawSave(uint8_t startPos, uint8_t selectPos)
@@ -275,7 +329,7 @@ void softwareMenu()
     fllRect(x, y, x + 50, y + 50);
     drawIco(saveIco, 16, 12, 48, 48);
     drawIco(uploadIco, 66, 12, 48, 48);
-    drawIco(otaIco, 16, 68, 48, 48);
+    //drawIco(otaIco, 16, 68, 48, 48);
     redrawScreen();
     thiskey = 0;
     while (thiskey == 0)
@@ -284,21 +338,7 @@ void softwareMenu()
       delay(100);
       changeSettings();
     }
-    if (thiskey & 2)
-    { // down
-      if (pos == 0)
-      {
-        pos = 2;
-      }
-    }
-    else if (thiskey & 1)
-    { // up
-      if (pos == 2)
-      {
-        pos = 0;
-      }
-    }
-    else if (thiskey & 4)
+    if (thiskey & 4)
     { // left
       if (pos == 1)
       {
@@ -325,7 +365,7 @@ void softwareMenu()
       }
       return;
     }
-    if (thiskey & 32)
+    if (thiskey & 128)
     {
       return;
     }
@@ -336,7 +376,7 @@ void drawVersionInFileList()
 {
   // Print version
   tft.setTextColor(TFT_DARKGREY);
-  tft.setCursor(20, SCREEN_REAL_HEIGHT - 8);
+  tft.setCursor(18, SCREEN_REAL_HEIGHT - 8);
   tft.print(F(BUILD_VERSION));
 }
 
@@ -533,14 +573,10 @@ void fileList(String path)
         }
       }
     }
-    if (thiskey & 32)
-    { // B
+    // Open Menu on START button
+    if (thiskey & 128) 
+    { 
       softwareMenu();
-      delay(400);
-    }
-    if (thiskey & 128)
-    { // select
-      saveManager();
       delay(400);
     }
   }
@@ -556,7 +592,7 @@ void loadBinFromSPIFS(char fileName[])
     for (i = 0; i < f.size(); i++)
     {
       writeMem(i, (uint8_t)f.read());
-  }
+    }
   Serial.print(F("Loaded "));
   Serial.print(i);
   Serial.println(F(" bytes"));

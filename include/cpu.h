@@ -4,6 +4,7 @@
 #include <EEPROM.h>
 #include <Arduino.h>
 #include "settings.h"
+#include <Ticker.h>
 
 #define FIFO_MAX_SIZE 32
 
@@ -25,19 +26,18 @@ extern String loadedFileName;
 extern char strBuf[16];
 extern uint8_t strBufLength;
 extern uint8_t strBufPosition;
-
-// FIFO Structure
-struct Fifo_t {
-    uint16_t el[FIFO_MAX_SIZE];
-    uint8_t position_read;
-    uint8_t position_write;
-    uint8_t size;
+extern uint8_t fixed_res_bit;
+extern uint8_t timeForRedraw;
+struct Fifo_t
+{
+  uint16_t el[FIFO_MAX_SIZE];
+  uint8_t position_read;
+  uint8_t position_write;
+  uint8_t size;
 };
 
-// FIFO Instances
 extern struct Fifo_t interruptFifo;
 
-// Function Declarations
 void fifoClear();
 void pushInFifo(int16_t n);
 uint16_t popOutFifo();

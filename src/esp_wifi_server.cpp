@@ -1,6 +1,6 @@
 #include <esp_wifi_server.h>
 #include <input.h>
-#include <esp_lge.h>
+#include <display.h>
 
 const char *ssid = APSSID;
 const char *password = APPSK;

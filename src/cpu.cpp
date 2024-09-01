@@ -3,12 +3,11 @@
 #include <lge_memory.h>
 #include <display.h>
 #include <sound.h>
-#include <esp_lge.h>
 #include <serial.h>
 #include <file_manager.h>
 #include <sound.h>
 #include <input.h>
-
+#include <coos.h>
 int16_t reg[16] __attribute__((aligned));
 int16_t shadow_reg[16] __attribute__((aligned));
 uint16_t pc = 0;
@@ -27,9 +26,9 @@ String loadedFileName;
 char strBuf[16];
 uint8_t strBufLength = 0;
 uint8_t strBufPosition = 0;
-
+uint8_t fixed_res_bit = 8;
+uint8_t timeForRedraw = 48;
 struct Fifo_t interruptFifo;
-
 #pragma GCC optimize("-O2")
 #pragma GCC push_options
 
@@ -147,10 +146,10 @@ void debug()
   Serial.print('/');
   Serial.println(interruptFifo.size);
   spriteDebug();
-  Serial.print(F("send to screen ms:"));
-  Serial.print(timeGpu);
-  Serial.print(F(" draw sprite ms:"));
-  Serial.print(timeSpr);
+  // Serial.print(F("send to screen ms:"));
+  // Serial.print(timeGpu);
+  // Serial.print(F(" draw sprite ms:"));
+  // Serial.print(timeSpr);
   Serial.print(' ');
 }
 

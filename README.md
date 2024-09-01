@@ -16,3 +16,6 @@ TODO:
 4. Open the project in VSCode
 5. Build and upload the project
 7. Build and upload the file system image
+
+## Controls 
+- SELECT + START: Pause/Resume

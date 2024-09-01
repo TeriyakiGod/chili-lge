@@ -6,20 +6,12 @@
 #include <font_a.h>
 #include <sound.h>
 #include <serial.h>
-#include <esp_lge.h>
 #include <file_manager.h>
 #include <lge_memory.h>
 #include <cpu.h>
 #include <input.h>
+#include <TFT_eSPI.h>
 
-// Definitions
-#define SPRITE_IS_SOLID(a) (sprite_table[a].flags & 1)
-#define SPRITE_IS_SCROLLED(a) (sprite_table[a].flags & 2)
-#define SPRITE_IS_ONEBIT(a) (sprite_table[a].flags & 4)
-#define SPRITE_IS_FLIP_HORIZONTAL(a) (sprite_table[a].flags & 8)
-#define SET_LINE_IS_DRAW(a) line_is_draw[(a) >> 5] |= (1 << ((a) & 31))
-
-// Structures
 struct Sprite
 {
     uint16_t address;
@@ -98,7 +90,7 @@ struct CustomFont
     int8_t charheight;
     int8_t columns;
 };
-
+extern TFT_eSPI tft;
 extern uint8_t *screen __attribute__((aligned));
 extern uint8_t *sprite_screen __attribute__((aligned));
 extern uint32_t line_is_draw[4] __attribute__((aligned));
@@ -129,6 +121,7 @@ extern uint8_t isClip;
 #define SPRITE_IS_FLIP_HORIZONTAL(a) (sprite_table[a].flags & 8)
 #define SET_LINE_IS_DRAW(a) line_is_draw[(a) >> 5] |= (1 << ((a) & 31))
 
+void initializeDisplay();
 // Function prototypes
 void screenMemoryAlloc();
 void screenMemoryFree();
@@ -184,7 +177,7 @@ void drwCirc(int16_t x0, int16_t y0, int16_t r);
 void fllCirc(int16_t x0, int16_t y0, int16_t r);
 void drwTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3);
 void fllTriangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
-void putString(const char* s, int8_t y);
+void putString(const char *s, int8_t y);
 void putchar(char c, uint8_t x, uint8_t y);
 void drawChar(uint8_t c, uint16_t x, uint16_t y);
 void drawString(uint16_t s, uint16_t x, uint16_t y);
