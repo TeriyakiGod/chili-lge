@@ -8,7 +8,7 @@ char charArray[340] __attribute__((aligned));
 uint16_t pix_buffer[SCREEN_REAL_WIDTH] __attribute__((aligned));
 uint16_t rscreenWidth;
 uint16_t rscreenHeight;
-uint16_t displayXOffset = 32;
+uint16_t displayXOffset = 0;
 struct Sprite sprite_table[SPRITE_COUNT] __attribute__((aligned));
 struct Particle particles[PARTICLE_COUNT] __attribute__((aligned));
 struct Emitter emitter;
@@ -270,14 +270,14 @@ void drawParticle(int16_t x, int16_t y, uint8_t color)
 
 void setScreenResolution(uint16_t nw, uint16_t nh)
 {
-  if (nw < SCREEN_REAL_WIDTH)
+  //if (nw < SCREEN_REAL_WIDTH)
     rscreenWidth = nw;
-  else
-    rscreenWidth = SCREEN_REAL_WIDTH - 1;
-  if (nh < SCREEN_REAL_HEIGHT)
+  //else
+    //rscreenWidth = SCREEN_REAL_WIDTH - 1;
+  //if (nh < SCREEN_REAL_HEIGHT)
     rscreenHeight = nh;
-  else
-    rscreenHeight = SCREEN_REAL_HEIGHT - 1;
+  //else
+  //  rscreenHeight = SCREEN_REAL_HEIGHT - 1;
   if (rscreenWidth < 95)
     rscreenWidth = 95;
   if (rscreenHeight < 95)
